@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Informasi HRIS Terpadu</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f1f5f9; color: #334155; height: 100vh; display: flex; overflow: hidden; }
+
+        /* --- LOGIN TERPADU --- */
+        #login-admin-container { width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; position: fixed; top: 0; left: 0; z-index: 999; }
+        .login-box { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 400px; text-align: center; }
+        .login-box h2 { color: #0f172a; margin-bottom: 10px; font-size: 1.5rem; }
+        .login-box p { color: #64748b; font-size: 0.9rem; margin-bottom: 25px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.85rem; color: #475569; }
+        .form-group input { width: 100%; padding: 11px 15px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; font-size: 0.95rem; }
+        .form-group input:focus { border-color: #0ea5e9; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15); }
+        .btn-login { background: #0ea5e9; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .btn-login:hover { background: #0284c7; }
+        #login_error { color: #ef4444; font-size: 0.85rem; margin-top: 15px; display: none; font-weight: 600; }
+
+        /* --- MODE VIEW ONLY UNTUK ADMIN BIASA --- */
+        .view-only-mode .btn-edit,
+        .view-only-mode .btn-hapus,
+        .view-only-mode .btn-tambah,
+        .view-only-mode .btn-import,
+        .view-only-mode .form-box,
+        .view-only-mode #boxShowForm,
+        .view-only-mode #boxShowFormKeluar,
+        .view-only-mode #boxShowFormSIK,
+        .view-only-mode #boxShowFormSTR {
+            display: none !important;
+        }
+
+        /* --- LAYOUT UTAMA --- */
+        #main-admin-layout { display: none; width: 100%; height: 100vh; }
+        .sidebar { width: 260px; background-color: #1e293b; color: white; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid #334155; }
+        .sidebar-header h2 { font-size: 1.3rem; color: #38bdf8; margin: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .nav-menu { list-style: none; padding: 15px 0; flex-grow: 1; overflow-y: auto; }
+        .nav-item { padding: 15px 25px; cursor: pointer; display: flex; align-items: center; gap: 12px; border-left: 4px solid transparent; transition: 0.2s; font-size: 0.95rem; }
+        .nav-item i { width: 20px; text-align: center; font-size: 1.1rem; opacity: 0.8; }
+        .nav-item:hover { background-color: #334155; color: white; }
+        .nav-item.active { background-color: #0f172a; border-left-color: #38bdf8; color: #38bdf8; font-weight: 600; }
+        .sidebar-footer { padding: 15px; border-top: 1px solid #334155; display: flex; flex-direction: column; background-color: #1e293b; }
+        .btn-logout-admin { background: #ef4444; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; text-align: center; }
+
+        .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .topbar { background-color: white; padding: 20px 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+        .topbar h2 { font-size: 1.4rem; color: #0f172a; margin: 0; text-transform: uppercase; }
+        .admin-profile { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: #64748b; font-weight: 600; }
+        #app-content { padding: 30px; overflow-y: auto; flex: 1; }
+    </style>
+</head>
+<body>
+
+    <div id="login-admin-container">
+        <div class="login-box">
+            <h2><i class="fas fa-fingerprint" style="color: #0ea5e9;"></i> Portal Terpadu HRIS</h2>
+            <p>Sistem Deteksi Otomatis: Superadmin / Admin / Pegawai</p>
+            
+            <form id="formLoginUtama">
+                <div class="form-group">
+                    <label>Username / NIK</label>
+                    <input type="text" id="input_username" placeholder="Masukkan Username / NIK" required autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="input_password" placeholder="Masukkan Password" required>
+                </div>
+                <button type="submit" class="btn-login" id="btnSubmitLogin">Masuk Sistem <i class="fas fa-sign-in-alt"></i></button>
+                <div id="login_error">Identitas tidak ditemukan / Password salah!</div>
+            </form>
+        </div>
+    </div>
+
+    <div id="main-admin-layout">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-hospital-symbol"></i> HRIS System</h2>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active" onclick="loadPage('dashboard', this)"><i class="fas fa-chart-pie"></i> Dashboard</li>
+                <li class="nav-item" onclick="loadPage('pegawai', this)"><i class="fas fa-users"></i> Data Master Pegawai</li>
+                <li class="nav-item" onclick="loadPage('pegawai-masuk', this)"><i class="fas fa-user-plus"></i> Histori Pegawai Masuk</li>
+                <li class="nav-item" onclick="loadPage('pegawai-keluar', this)"><i class="fas fa-sign-out-alt"></i> Histori Pegawai Keluar</li>
+                <li class="nav-item" onclick="loadPage('sik', this)"><i class="fas fa-file-medical"></i> Berkas SIK / SIP</li>
+                <li class="nav-item" onclick="loadPage('str', this)"><i class="fas fa-id-card-alt"></i> Berkas STR</li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <button class="btn-logout-admin" id="btnAdminLogout"><i class="fas fa-power-off"></i> Keluar (Logout)</button>
+            </div>
+        </div>
+
+        <div class="main-wrapper">
+            <div class="topbar">
+                <h2 id="page-title">Memuat...</h2>
+                <div class="admin-profile">
+                    <span id="role-badge"><i class="fas fa-user-shield" style="color: #0ea5e9;"></i> Memuat...</span>
+                </div>
+            </div>
+            
+            <div id="app-content"></div>
+        </div>
+    </div>
+
+    <script type="module" src="./js/app.js"></script>
+
+</body>
+</html>
