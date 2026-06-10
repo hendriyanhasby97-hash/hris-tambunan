@@ -11,13 +11,40 @@
     </style>
 </head>
 <body class="bg-light">
-    <div class="d-flex min-vh-100" id=\"wrapper\">
+    <div class="d-flex min-vh-100" id="wrapper">
         
-        <div class="bg-dark text-white" id="sidebar-wrapper">
-            <div class="p-3 border-bottom text-center fw-bold fs-5">Sistem Pegawai</div>
+        <div class="bg-dark text-white shadow-lg" id="sidebar-wrapper">
+            <div class="p-3 border-bottom border-secondary text-center fw-bold fs-5">Sistem Pegawai</div>
             <div class="list-group list-group-flush mt-3">
-                <a href="../index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">Dashboard</a>
-                <a href="index.html" class="list-group-item list-group-item-action bg-dark text-white active">Data Pegawai</a>
+                <a href="../index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">
+                    Dashboard
+                </a>
+                
+                <a href="#masterDataMenu" data-bs-toggle="collapse" class="list-group-item list-group-item-action bg-dark text-white border-0 d-flex justify-content-between align-items-center">
+                    Master Data
+                    <span class="small">▼</span>
+                </a>
+                <div class="collapse show" id="masterDataMenu">
+                    <a href="index.html" class="list-group-item list-group-item-action bg-secondary text-white border-0 ps-5 active">
+                        Data Pegawai
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action bg-dark text-white border-0 ps-5">
+                        Histori Pegawai Masuk
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action bg-dark text-white border-0 ps-5">
+                        Histori Pegawai Keluar
+                    </a>
+                </div>
+
+                <a href="#" class="list-group-item list-group-item-action bg-dark text-white border-0">
+                    Kelengkapan Data
+                </a>
+                <a href="#" class="list-group-item list-group-item-action bg-dark text-white border-0">
+                    Berkas SDM
+                </a>
+                <a href="#" class="list-group-item list-group-item-action bg-dark text-white border-0">
+                    Pengaturan
+                </a>
             </div>
         </div>
 
@@ -26,7 +53,7 @@
                 <button class="btn btn-outline-dark btn-sm" id="btn-toggle">☰ Menu</button>
                 <div class="d-flex align-items-center">
                     <span class="me-3 small text-secondary" id="user-display">Memuat user...</span>
-                    <button class="btn btn-danger btn-sm" onclick="logoutApp('../login.html')">Logout</button>
+                    <button class="btn btn-danger btn-sm" onclick="logoutApp('../../login.html')">Logout</button>
                 </div>
             </nav>
 
@@ -319,6 +346,7 @@
 
     <script type="module" src="employee.js"></script>
     <script>
+        // Logika Hide/Show Sidebar Menu
         document.getElementById('btn-toggle').addEventListener('click', () => {
             document.getElementById('sidebar-wrapper').classList.toggle('sidebar-hidden');
         });
