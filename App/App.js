@@ -1,31 +1,34 @@
 // App/App.js
-import { supabase } from './koneksi.js';
 
 // Fungsi Logout Global
-// Dibuat menjadi window.logoutApp agar bisa dipanggil langsung dari tombol di HTML (onclick)
-window.logoutApp = async (pathToRoot) => {
-    // Lakukan proses sign out di Supabase
-    await supabase.auth.signOut();
-    
-    // Arahkan kembali ke halaman login sesuai path yang diberikan
-    window.location.href = pathToRoot; 
+window.logoutApp = (pathToRoot) => {
+    if (confirm("Apakah Anda yakin ingin keluar dari sistem?")) {
+        // Hapus tiket login custom kita
+        localStorage.removeItem('hris_session');
+        window.location.href = pathToRoot; 
+    }
 };
 
-// Cek sesi (session) saat halaman apa pun dimuat
-document.addEventListener('DOMContentLoaded', async () => {
-    // Ambil status sesi user dari Supabase
-    const { data: { session } } = await supabase.auth.getSession();
+// Cek Keamanan Sesi Multi-Role saat Halaman Dimuat
+document.addEventListener('DOMContentLoaded', () => {
+    const session = localStorage.getItem('hris_session');
+    const currentPath = window.location.pathname;
     
-    // Cek apakah URL saat ini adalah halaman login
-    const isLoginPage = window.location.pathname.endsWith('login.html') || window.location.pathname.endsWith('/');
+    // Cek apakah user sedang berada di halaman login
+    const isLoginPage = currentPath.endsWith('login.html') || currentPath.endsWith('/') || currentPath.includes('login');
 
-    // Jika user belum login dan mencoba mengakses halaman selain login, tolak aksesnya
+    // Jika TIDAK ADA SESI dan sedang maksa buka halaman dalam (Dashboard/Pegawai)
     if (!session && !isLoginPage) {
-        console.log("Akses ditolak: Silakan login terlebih dahulu.");
-        alert("Sesi Anda telah habis atau Anda belum login.");
+        console.log("Akses ditolak: Anda belum login!");
+        alert("Sesi Anda kosong atau Anda belum login.");
         
-        // Sesuaikan dengan letak file login.html kamu
-        // Jika file HTML-mu diletakkan bertingkat di GitHub Pages, gunakan logic pengalihan ke root aplikasi
-        window.location.href = '../login.html'; 
+        // Redirect dinamis ke login.html berdasarkan level folder
+        if (currentPath.includes('/Layout/Employee/')) {
+            window.location.href = '../../login.html';
+        } else if (currentPath.includes('/Layout/')) {
+            window.location.href = '../login.html';
+        } else {
+            window.location.href = 'login.html';
+        }
     }
 });
