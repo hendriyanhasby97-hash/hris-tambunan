@@ -3,111 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Pegawai - Sistem Pegawai</title>
+    <title>Data Pegawai - HRIS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
     <style>
-        /* Konfigurasi Ukuran & Efek Transisi Sidebar */
-        #sidebar-wrapper { 
-            width: 260px; 
-            transition: margin-left 0.25s ease-out; 
-            min-height: 100vh;
-        }
-        /* Kelas untuk Menyembunyikan Sidebar */
-        .sidebar-hidden { 
-            margin-left: -260px; 
-        }
-        /* Styling Sub-menu agar menjorok ke dalam */
-        .submenu-item {
-            padding-left: 2.5rem !important;
-            font-size: 0.9rem;
-            opacity: 0.85;
-        }
-        .submenu-item:hover {
-            opacity: 1;
-        }
+        #sidebar-wrapper { width: 250px; transition: margin 0.25s ease-out; }
+        .sidebar-hidden { margin-left: -250px; }
     </style>
 </head>
 <body class="bg-light">
-    <div class="d-flex" id="wrapper">
+    <div class="d-flex min-vh-100" id=\"wrapper\">
         
         <div class="bg-dark text-white" id="sidebar-wrapper">
-            <div class="p-3 border-bottom text-center fw-bold fs-5 bg-black bg-opacity-20">
-                Sistem Pegawai
-            </div>
-            
-            <div class="list-group list-group-flush mt-2">
-                <a href="../index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">
-                     Dashboard
-                </a>
-                
-                <a href="#masterDataMenu" data-bs-toggle="collapse" class="list-group-item list-group-item-action bg-dark text-white border-0 d-flex justify-content-between align-items-center">
-                    <span> Master Data</span>
-                    <small class="text-white-50">▼</small>
-                </a>
-                <div class="collapse show bg-black bg-opacity-10" id="masterDataMenu">
-                    <a href="index.html" class="list-group-item list-group-item-action bg-dark text-white active border-0 submenu-item">
-                        › Data Pegawai
-                    </a>
-                    <a href="histori-masuk.html" class="list-group-item list-group-item-action bg-dark text-white border-0 submenu-item">
-                        › Histori Pegawai Masuk
-                    </a>
-                    <a href="histori-keluar.html" class="list-group-item list-group-item-action bg-dark text-white border-0 submenu-item">
-                        › Histori Pegawai Keluar
-                    </a>
-                </div>
-
-                <a href="../Kelengkapan/index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">
-                     Kelengkapan Data
-                </a>
-
-                <a href="../Berkas/index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">
-                     Berkas SDM
-                </a>
-
-                <div class="border-top border-secondary my-2 mx-3"></div>
-
-                <a href="../Pengaturan/index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">
-                     Pengaturan
-                </a>
-
-                <a href="#" class="list-group-item list-group-item-action bg-dark text-danger border-0 fw-bold" onclick="logoutApp('../../login.html')">
-                     Logout
-                </a>
+            <div class="p-3 border-bottom text-center fw-bold fs-5">Sistem Pegawai</div>
+            <div class="list-group list-group-flush mt-3">
+                <a href="../index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">Dashboard</a>
+                <a href="index.html" class="list-group-item list-group-item-action bg-dark text-white active">Data Pegawai</a>
             </div>
         </div>
 
-        <div class="w-100" style="overflow-x: hidden;">
+        <div class="w-100">
             <nav class="navbar navbar-light bg-white shadow-sm px-3 mb-4">
                 <button class="btn btn-outline-dark btn-sm" id="btn-toggle">☰ Menu</button>
-                <span class="navbar-text ms-auto me-3 small text-muted" id="user-email">Memuat user...</span>
-                <button class="btn btn-danger btn-sm" onclick="logoutApp('../../login.html')">Logout</button>
+                <div class="d-flex align-items-center">
+                    <span class="me-3 small text-secondary" id="user-display">Memuat user...</span>
+                    <button class="btn btn-danger btn-sm" onclick="logoutApp('../login.html')">Logout</button>
+                </div>
             </nav>
 
             <div class="container-fluid px-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-semibold m-0">Data Kelola Pegawai</h4>
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahPegawai">+ Tambah Pegawai</button>
+                    <h4>Manajemen Data Pegawai</h4>
+                    <button class="btn btn-primary" id="btn-tambah" data-bs-toggle="modal" data-bs-target="#modalPegawai">
+                        + Tambah Pegawai
+                    </button>
                 </div>
-                
-                <div class="card border-0 shadow-sm p-3">
+
+                <div class="card p-3 shadow-sm mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-bold">Pencarian</label>
+                            <input type="text" id="search-input" class="form-control" placeholder="Cari berdasarkan NIK, Nama, atau Jabatan...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-bold">Filter Status</label>
+                            <select id="filter-status" class="form-select">
+                                <option value="">Semua Status</option>
+                                <option value="Aktif">Aktif</option>
+                                <option value="Non-Aktif">Non-Aktif</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Filter Ruangan</label>
+                            <select id="filter-ruangan" class="form-select">
+                                <option value="">Semua Ruangan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold">Filter Kelompok Tenaga</label>
+                            <select id="filter-kelompok" class="form-select">
+                                <option value="">Semua Kelompok</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-dark">
                                 <tr>
-                                    <th>No</th>
+                                    <th>NIK</th>
+                                    <th>Nama</th>
                                     <th>NIP</th>
-                                    <th>Nama Pegawai</th>
-                                    <th>Email</th>
                                     <th>Jabatan</th>
                                     <th>Ruangan</th>
-                                    <th>Jenis Kelamin</th>
+                                    <th>Masa Kerja</th>
                                     <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabel-pegawai">
+                            <tbody id="table-body">
                                 <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">Memuat data pegawai...</td>
+                                    <td colspan="7" class="text-center py-4 text-secondary">Memuat data pegawai...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -115,146 +91,236 @@
                 </div>
             </div>
         </div>
-
     </div>
 
-    <div class="modal fade" id="modalTambahPegawai" tabindex="-1" aria-labelledby="modalTambahPegawaiLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="modalTambahPegawaiLabel">Form Tambah Pegawai Baru</h5>
-                    <button type="button" class="btn-close" data-bs-shadow="none" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal fade" id="modalPegawai" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <form id="form-pegawai" class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modal-title">Tambah Pegawai Baru</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <form id="form-tambah-pegawai">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">NIP</label>
-                            <input type="text" id="nip" class="form-control" required>
+                <div class="modal-body">
+                    <input type="hidden" id="id_pegawai">
+
+                    <ul class="nav nav-tabs mb-3" id="modalTab" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" id="pribadi-tab" data-bs-toggle="tab" data-bs-target="#tab-pribadi" type="button">1. Data Pribadi</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="kepegawaian-tab" data-bs-toggle="tab" data-bs-target="#tab-kepegawaian" type="button">2. Data Kepegawaian</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="pendidikan-tab" data-bs-toggle="tab" data-bs-target="#tab-pendidikan" type="button">3. Pendidikan & Lainnya</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="modalTabContent">
+                        <div class="tab-pane fade show active" id="tab-pribadi">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">NIK *</label>
+                                    <input type="text" id="nik" class="form-control" required>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-semibold">Nama Lengkap *</label>
+                                    <input type="text" id="nama" class="form-control" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Jenis Kelamin</label>
+                                    <select id="jeniskelamin" class="form-select">
+                                        <option value="Pria">Pria</option>
+                                        <option value="Wanita">Wanita</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Agama</label>
+                                    <input type="text" id="agama" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Status Pernikahan</label>
+                                    <select id="statuspernikahan" class="form-select">
+                                        <option value="Belum Kawin">Belum Kawin</option>
+                                        <option value="Kawin">Kawin</option>
+                                        <option value="Cerai Hidup">Cerai Hidup</option>
+                                        <option value="Cerai Mati">Cerai Mati</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Nama Pasangan (Suami/Istri)</label>
+                                    <input type="text" id="pasangan" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Jumlah Anak</label>
+                                    <input type="number" id="jumlahanak" class="form-control" value="0" min="0">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">No. HP</label>
+                                    <input type="text" id="nohp" class="form-control">
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-semibold">Email</label>
+                                    <input type="email" id="email" class="form-control">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label small fw-semibold">Alamat Lengkap</label>
+                                    <textarea id="alamat" class="form-control" rows="2"></textarea>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Nama Lengkap</label>
-                            <input type="text" id="nama" class="form-control" required>
+
+                        <div class="tab-pane fade" id="tab-kepegawaian">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">NIP</label>
+                                    <input type="text" id="nip" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Status Pegawai</label>
+                                    <select id="status" class="form-select">
+                                        <option value="Aktif">Aktif</option>
+                                        <option value="Non-Aktif">Non-Aktif</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Kelompok Tenaga</label>
+                                    <input type="text" id="kelompoktenaga" class="form-control" placeholder="Medis, Penunjang, Administrasi, dll">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Golongan / Pangkat</label>
+                                    <input type="text" id="golongan" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">TMT Pangkat</label>
+                                    <input type="date" id="tmtpangkat" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">TMT Pangkat Lanjut</label>
+                                    <input type="date" id="tmtplanjut" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Kelompok Jabatan</label>
+                                    <input type="text" id="kelompokjabatan" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Jabatan Struktural/Fungsional</label>
+                                    <input type="text" id="jabatan" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">TMT Jabatan</label>
+                                    <input type="date" id="tmtjabatan" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">TMT CPNS</label>
+                                    <input type="date" id="tmtcpns" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">BUP (Batas Usia Pensiun)</label>
+                                    <input type="number" id="bup" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">TMT Pensiun</label>
+                                    <input type="date" id="tmtpensiun" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Tanggal Masuk RS</label>
+                                    <input type="date" id="masukrs" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Masa Kerja</label>
+                                    <input type="text" id="masakerja" class="form-control" placeholder="Contoh: 5 Tahun 2 Bulan">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">Ruangan / Unit Kerja</label>
+                                    <input type="text" id="ruangan" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold">No. Tata Tugas</label>
+                                    <input type="text" id="notatugas" class="form-control">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold">TMT Tata Tugas</label>
+                                    <input type="date" id="tmt" class="form-control">
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" id="email" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Jabatan</label>
-                            <input type="text" id="jabatan" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Ruangan</label>
-                            <input type="text" id="ruangan" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Jenis Kelamin</label>
-                            <select id="jeniskelamin" class="form-select" required>
-                                <option value="" selected disabled>-- Pilih Jenis Kelamin --</option>
-                                <option value="Pria">Pria</option>
-                                <option value="Wanita">Wanita</option>
-                            </select>
+
+                        <div class="tab-pane fade" id="tab-pendidikan">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Jenjang Pendidikan</label>
+                                    <input type="text" id="jpendidikan" class="form-control" placeholder="D3, S1, S2, dll">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Fakultas</label>
+                                    <input type="text" id="fpendidikan" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Jurusan Spesifik</label>
+                                    <input type="text" id="jrspendidikan" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Asal Institusi Pendidikan</label>
+                                    <input type="text" id="asalpendidikan" class="form-control">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-semibold">Tahun Lulus</label>
+                                    <input type="number" id="tahunlulus" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">No. BPJS Kesehatan</label>
+                                    <input type="text" id="bpjs" class="form-control">
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small fw-semibold">No. BPJS TK / Taspen</label>
+                                    <input type="text" id="bpjstktaspen" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-semibold">NPWP</label>
+                                    <input type="text" id="npwp" class="form-control">
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-primary">Simpan Data</button>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success" id="btn-simpan">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalDetailPegawai" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">Biodata Lengkap Pegawai</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered mb-0 small">
+                            <tbody id="detail-view-body">
+                                </tbody>
+                        </table>
                     </div>
-                </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script type="module" src="../../App/App.js"></script>
 
+    <script type="module" src="employee.js"></script>
     <script>
         document.getElementById('btn-toggle').addEventListener('click', () => {
             document.getElementById('sidebar-wrapper').classList.toggle('sidebar-hidden');
-        });
-    </script>
-    
-    <script type="module" src="../../App/App.js"></script>
-    
-    <script type="module">
-        import { EmployeeCRUD } from './employee.js';
-        import { supabase } from '../../App/koneksi.js';
-
-        // Tampilkan email user login aktif di navbar
-        async function loadUserHeader() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                document.getElementById('user-email').innerText = user.email;
-            }
-        }
-
-        // Ambil dan Tampilkan Data Pegawai ke Tabel
-        async function renderTable() {
-            const tbody = document.getElementById('tabel-pegawai');
-            const dataPegawai = await EmployeeCRUD.getAll();
-
-            if (!dataPegawai || dataPegawai.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Tidak ada data pegawai.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = '';
-            dataPegawai.forEach((pegawai, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${pegawai.nip || '-'}</td>
-                    <td class="fw-semibold">${pegawai.nama}</td>
-                    <td>${pegawai.email || '-'}</td>
-                    <td>${pegawai.jabatan || '-'}</td>
-                    <td><span class="badge bg-secondary bg-opacity-75">${pegawai.ruangan || '-'}</span></td>
-                    <td>${pegawai.jeniskelamin || '-'}</td>
-                    <td class="text-center">
-                        <button class="btn btn-danger btn-sm btn-hapus" data-id="${pegawai.id_pegawai}">Hapus</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Berikan event listener klik hapus secara dinamis
-            document.querySelectorAll('.btn-hapus').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = e.target.getAttribute('data-id');
-                    if (confirm('Apakah kamu yakin ingin menghapus data pegawai ini?')) {
-                        await EmployeeCRUD.delete(id);
-                        renderTable(); // reload tabel setelah berhasil dihapus
-                    }
-                });
-            });
-        }
-
-        // Handle Submit Form Tambah Pegawai
-        document.getElementById('form-tambah-pegawai').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const employeeData = {
-                nip: document.getElementById('nip').value,
-                nama: document.getElementById('nama').value,
-                email: document.getElementById('email').value,
-                jabatan: document.getElementById('jabatan').value,
-                ruangan: document.getElementById('ruangan').value,
-                jeniskelamin: document.getElementById('jeniskelamin').value
-            };
-
-            await EmployeeCRUD.create(employeeData);
-            
-            // Reset form dan tutup modal setelah berhasil simpan
-            document.getElementById('form-tambah-pegawai').reset();
-            const modalEl = document.getElementById('modalTambahPegawai');
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            modalInstance.hide();
-
-            renderTable(); // reload tabel agar data baru langsung muncul
-        });
-
-        // Jalankan fungsi saat halaman selesai dimuat
-        document.addEventListener('DOMContentLoaded', () => {
-            loadUserHeader();
-            renderTable();
         });
     </script>
 </body>
