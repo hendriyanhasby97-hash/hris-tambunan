@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 1. FUNGSI AMBIL DATA UTAMA & GENERATE FILTER OPTION
-async funtion fetchEmployeeData() {
+async function fetchEmployeeData() {
     tableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4">Memperbarui tabel...</td></tr>`;
     
     const { data, error } = await supabase
