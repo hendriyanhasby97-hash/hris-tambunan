@@ -38,12 +38,12 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) {
                 alert('Login Gagal: ' + error.message);
             } else {
-                // Biarkan App.js yang mengurus routing setelah login berhasil
-                window.location.href = '/Layout/index.html'; 
+                // Link relatif agar aman di GitHub Pages
+                window.location.href = 'Layout/index.html'; 
             }
         });
     </script>
