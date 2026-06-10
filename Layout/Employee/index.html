@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Pegawai - Sistem Pegawai</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* Konfigurasi Ukuran & Efek Transisi Sidebar */
+        #sidebar-wrapper { 
+            width: 260px; 
+            transition: margin-left 0.25s ease-out; 
+            min-height: 100vh;
+        }
+        /* Kelas untuk Menyembunyikan Sidebar */
+        .sidebar-hidden { 
+            margin-left: -260px; 
+        }
+        /* Styling Sub-menu agar menjorok ke dalam */
+        .submenu-item {
+            padding-left: 2.5rem !important;
+            font-size: 0.9rem;
+            opacity: 0.85;
+        }
+        .submenu-item:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="d-flex" id="wrapper">
+        
+        <div class="bg-dark text-white" id="sidebar-wrapper">
+            <div class="p-3 border-bottom text-center fw-bold fs-5 bg-black bg-opacity-20">
+                Sistem Pegawai
+            </div>
+            
+            <div class="list-group list-group-flush mt-2">
+                <a href="../index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">
+                     Dashboard
+                </a>
+                
+                <a href="#masterDataMenu" data-bs-toggle="collapse" class="list-group-item list-group-item-action bg-dark text-white border-0 d-flex justify-content-between align-items-center">
+                    <span> Master Data</span>
+                    <small class="text-white-50">▼</small>
+                </a>
+                <div class="collapse show bg-black bg-opacity-10" id="masterDataMenu">
+                    <a href="index.html" class="list-group-item list-group-item-action bg-dark text-white active border-0 submenu-item">
+                        › Data Pegawai
+                    </a>
+                    <a href="histori-masuk.html" class="list-group-item list-group-item-action bg-dark text-white border-0 submenu-item">
+                        › Histori Pegawai Masuk
+                    </a>
+                    <a href="histori-keluar.html" class="list-group-item list-group-item-action bg-dark text-white border-0 submenu-item">
+                        › Histori Pegawai Keluar
+                    </a>
+                </div>
+
+                <a href="../Kelengkapan/index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">
+                     Kelengkapan Data
+                </a>
+
+                <a href="../Berkas/index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">
+                     Berkas SDM
+                </a>
+
+                <div class="border-top border-secondary my-2 mx-3"></div>
+
+                <a href="../Pengaturan/index.html" class="list-group-item list-group-item-action bg-dark text-white border-0">
+                     Pengaturan
+                </a>
+
+                <a href="#" class="list-group-item list-group-item-action bg-dark text-danger border-0 fw-bold" onclick="logoutApp('../../login.html')">
+                     Logout
+                </a>
+            </div>
+        </div>
+
+        <div class="w-100" style="overflow-x: hidden;">
+            <nav class="navbar navbar-light bg-white shadow-sm px-3 mb-4">
+                <button class="btn btn-outline-dark btn-sm" id="btn-toggle">☰ Menu</button>
+                <span class="navbar-text ms-auto me-3 small text-muted" id="user-email">Memuat user...</span>
+                <button class="btn btn-danger btn-sm" onclick="logoutApp('../../login.html')">Logout</button>
+            </nav>
+
+            <div class="container-fluid px-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-semibold m-0">Data Kelola Pegawai</h4>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalTambahPegawai">+ Tambah Pegawai</button>
+                </div>
+                
+                <div class="card border-0 shadow-sm p-3">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>No</th>
+                                    <th>NIP</th>
+                                    <th>Nama Pegawai</th>
+                                    <th>Email</th>
+                                    <th>Jabatan</th>
+                                    <th>Ruangan</th>
+                                    <th>Jenis Kelamin</th>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabel-pegawai">
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">Memuat data pegawai...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="modalTambahPegawai" tabindex="-1" aria-labelledby="modalTambahPegawaiLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTambahPegawaiLabel">Form Tambah Pegawai Baru</h5>
+                    <button type="button" class="btn-close" data-bs-shadow="none" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="form-tambah-pegawai">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">NIP</label>
+                            <input type="text" id="nip" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nama Lengkap</label>
+                            <input type="text" id="nama" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="email" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Jabatan</label>
+                            <input type="text" id="jabatan" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ruangan</label>
+                            <input type="text" id="ruangan" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Jenis Kelamin</label>
+                            <select id="jeniskelamin" class="form-select" required>
+                                <option value="" selected disabled>-- Pilih Jenis Kelamin --</option>
+                                <option value="Pria">Pria</option>
+                                <option value="Wanita">Wanita</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById('btn-toggle').addEventListener('click', () => {
+            document.getElementById('sidebar-wrapper').classList.toggle('sidebar-hidden');
+        });
+    </script>
+    
+    <script type="module" src="../../App/App.js"></script>
+    
+    <script type="module">
+        import { EmployeeCRUD } from './employee.js';
+        import { supabase } from '../../App/koneksi.js';
+
+        // Tampilkan email user login aktif di navbar
+        async function loadUserHeader() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                document.getElementById('user-email').innerText = user.email;
+            }
+        }
+
+        // Ambil dan Tampilkan Data Pegawai ke Tabel
+        async function renderTable() {
+            const tbody = document.getElementById('tabel-pegawai');
+            const dataPegawai = await EmployeeCRUD.getAll();
+
+            if (!dataPegawai || dataPegawai.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Tidak ada data pegawai.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            dataPegawai.forEach((pegawai, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${pegawai.nip || '-'}</td>
+                    <td class="fw-semibold">${pegawai.nama}</td>
+                    <td>${pegawai.email || '-'}</td>
+                    <td>${pegawai.jabatan || '-'}</td>
+                    <td><span class="badge bg-secondary bg-opacity-75">${pegawai.ruangan || '-'}</span></td>
+                    <td>${pegawai.jeniskelamin || '-'}</td>
+                    <td class="text-center">
+                        <button class="btn btn-danger btn-sm btn-hapus" data-id="${pegawai.id_pegawai}">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Berikan event listener klik hapus secara dinamis
+            document.querySelectorAll('.btn-hapus').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = e.target.getAttribute('data-id');
+                    if (confirm('Apakah kamu yakin ingin menghapus data pegawai ini?')) {
+                        await EmployeeCRUD.delete(id);
+                        renderTable(); // reload tabel setelah berhasil dihapus
+                    }
+                });
+            });
+        }
+
+        // Handle Submit Form Tambah Pegawai
+        document.getElementById('form-tambah-pegawai').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const employeeData = {
+                nip: document.getElementById('nip').value,
+                nama: document.getElementById('nama').value,
+                email: document.getElementById('email').value,
+                jabatan: document.getElementById('jabatan').value,
+                ruangan: document.getElementById('ruangan').value,
+                jeniskelamin: document.getElementById('jeniskelamin').value
+            };
+
+            await EmployeeCRUD.create(employeeData);
+            
+            // Reset form dan tutup modal setelah berhasil simpan
+            document.getElementById('form-tambah-pegawai').reset();
+            const modalEl = document.getElementById('modalTambahPegawai');
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            modalInstance.hide();
+
+            renderTable(); // reload tabel agar data baru langsung muncul
+        });
+
+        // Jalankan fungsi saat halaman selesai dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserHeader();
+            renderTable();
+        });
+    </script>
+</body>
+</html>
