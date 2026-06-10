@@ -115,7 +115,28 @@
         alert("Gagal memuat data: " + error.message);
     }
 }
-
+// Menangani submit form tambah pegawai
+document.getElementById('form-pegawai').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Ambil data dari form menggunakan fungsi di employee.js
+    const dataPegawai = EmployeeCRUD.getFormData();
+    
+    try {
+        await EmployeeCRUD.create(dataPegawai);
+        alert('Data berhasil disimpan!');
+        
+        // Tutup modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('modalPegawai'));
+        modal.hide();
+        
+        // Reset form & Refresh tabel
+        document.getElementById('form-pegawai').reset();
+        loadData(); 
+    } catch (error) {
+        alert('Gagal menyimpan: ' + error.message);
+    }
+});
         // Jalankan saat halaman dibuka
         document.addEventListener('DOMContentLoaded', loadData);
         
