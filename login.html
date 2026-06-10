@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistem Pegawai</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light d-flex align-items-center vh-100">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <h4 class="text-center mb-4 fw-bold text-dark">Login Pegawai</h4>
+                        
+                        <form id="form-login">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Email</label>
+                                <input type="email" id="email" class="form-control form-control-lg fs-6" placeholder="nama@email.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-secondary">Password</label>
+                                <input type="password" id="password" class="form-control form-control-lg fs-6" placeholder="••••••••" required>
+                            </div>
+                            <button type="submit" id="btn-submit-login" class="btn btn-primary w-100 btn-lg fs-6 mt-2">Masuk</button>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './App/koneksi.js';
+        
+        // Pastikan jika user sudah memiliki sesi login aktif, langsung alihkan ke Dashboard tanpa perlu login lagi
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                window.location.href = 'Layout/index.html';
+            }
+        });
+
+        // Event Handling Form Login
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btnSubmit = document.getElementById('btn-submit-login');
+
+            // Ubah tombol menjadi loading state
+            btnSubmit.innerText = 'Memverifikasi...';
+            btnSubmit.disabled = true;
+
+            // Proses autentikasi masuk ke Supabase
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                alert('Login Gagal: ' + error.message);
+                btnSubmit.innerText = 'Masuk';
+                btnSubmit.disabled = false;
+            } else {
+                // Berhasil login, arahkan menggunakan link relatif agar aman di VS Code / GitHub Pages
+                window.location.href = 'Layout/index.html'; 
+            }
+        });
+    </script>
+</body>
+</html>
