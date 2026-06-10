@@ -87,10 +87,14 @@
         
         // Logika sederhana untuk render tabel
         async function loadData() {
-            const tbody = document.querySelector('#tabel-pegawai tbody');
-            const data = await EmployeeCRUD.getAll();
-            tbody.innerHTML = '';
-            
+    const tbody = document.querySelector('#tabel-pegawai tbody');
+    try {
+        const data = await EmployeeCRUD.getAll();
+        tbody.innerHTML = '';
+        
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center">Belum ada data pegawai. Silakan klik tombol "Tambah Pegawai".</td></tr>`;
+        } else {
             data.forEach(p => {
                 tbody.innerHTML += `
                     <tr>
@@ -107,6 +111,10 @@
                 `;
             });
         }
+    } catch (error) {
+        alert("Gagal memuat data: " + error.message);
+    }
+}
 
         // Jalankan saat halaman dibuka
         document.addEventListener('DOMContentLoaded', loadData);
