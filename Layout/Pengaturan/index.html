@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Dropdown & Import</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        #sidebar-wrapper { width: 250px; transition: margin 0.25s ease-out; }
+        .sidebar-hidden { margin-left: -250px; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="d-flex min-vh-100" id="wrapper">
+        <div class="bg-dark text-white" id="sidebar-wrapper">
+            <div class="p-3 border-bottom text-center fw-bold fs-5">Sistem Pegawai</div>
+            <div class="list-group list-group-flush mt-3">
+                <a href="../index.html" class="list-group-item list-group-item-action bg-dark text-white">Dashboard</a>
+                <a href="../Employee/index.html" class="list-group-item list-group-item-action bg-dark text-white">Data Pegawai</a>
+                <a href="index.html" class="list-group-item list-group-item-action bg-dark text-white active">Pengaturan</a>
+            </div>
+        </div>
+
+        <div class="w-100">
+            <nav class="navbar navbar-light bg-white shadow-sm px-3 mb-4">
+                <button class="btn btn-outline-dark btn-sm" id="btn-toggle">☰ Menu</button>
+                <button class="btn btn-danger btn-sm" onclick="logoutApp('../index.html')">Logout</button>
+            </nav>
+
+            <div class="container-fluid px-4">
+                <h4 class="mb-4">⚙️ Pengaturan Dropdown Sistem Pegawai</h4>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm mb-3">
+                            <div class="card-header bg-primary text-white fw-bold">Tambah Opsi Manual</div>
+                            <div class="card-body">
+                                <form id="form-tambah-opsi">
+                                    <div class="mb-3">
+                                        <label class="form-label">Kategori Dropdown</label>
+                                        <select id="kategori" class="form-select" required>
+                                            <option value="Agama">Agama</option>
+                                            <option value="Kelompok Tenaga">Kelompok Tenaga</option>
+                                            <option value="Golongan Pangkat">Golongan Pangkat</option>
+                                            <option value="Kelompok Jabatan">Kelompok Jabatan</option>
+                                            <option value="Jabatan">Jabatan</option>
+                                            <option value="BUP">BUP (Batas Usia Pensiun)</option>
+                                            <option value="Ruangan">Ruangan</option>
+                                            <option value="Jenjang">Jenjang Pendidikan</option>
+                                            <option value="Fakultas">Fakultas</option>
+                                            <option value="Jurusan">Jurusan</option>
+                                            <option value="Asal Pendidikan">Asal Pendidikan</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nilai / Nama Opsi</label>
+                                        <input type="text" id="nilai" class="form-control" placeholder="Contoh: Islam, 58, Ruang Melati" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">Simpan Opsi</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-success text-white fw-bold">Bulk Import Opsi (Excel/CSV)</div>
+                            <div class="card-body">
+                                <p class="small text-muted">Format file harus memiliki header kolom: <b>kategori</b> dan <b>nilai</b>.</p>
+                                <div class="mb-3">
+                                    <input type="file" id="file-import" class="form-control" accept=".xlsx, .xls, .csv">
+                                </div>
+                                <button id="btn-import" class="btn btn-success w-100">Proses Import Data</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8 mb-4">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">Daftar Opsi Terdaftar</span>
+                                <select id="filter-kategori" class="form-select form-select-sm w-50">
+                                    <option value="Semua">Tampilkan Semua Kategori</option>
+                                    <option value="Agama">Agama</option>
+                                    <option value="Kelompok Tenaga">Kelompok Tenaga</option>
+                                    <option value="Golongan Pangkat">Golongan Pangkat</option>
+                                    <option value="Kelompok Jabatan">Kelompok Jabatan</option>
+                                    <option value="Jabatan">Jabatan</option>
+                                    <option value="BUP">BUP</option>
+                                    <option value="Ruangan">Ruangan</option>
+                                    <option value="Jenjang">Jenjang</option>
+                                    <option value="Fakultas">Fakultas</option>
+                                    <option value="Jurusan">Jurusan</option>
+                                    <option value="Asal Pendidikan">Asal Pendidikan</option>
+                                </select>
+                            </div>
+                            <div class="card-body p-0 table-responsive" style="max-height: 450px;">
+                                <table class="table table-hover table-striped align-middle mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Kategori</th>
+                                            <th>Nilai / Opsi</th>
+                                            <th class="text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody-opsi">
+                                        <tr><td colspan="4" class="text-center text-muted">Memuat data...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('btn-toggle').addEventListener('click', () => {
+            document.getElementById('sidebar-wrapper').classList.toggle('sidebar-hidden');
+        });
+    </script>
+    <script type="module" src="../../App/App.js"></script>
+    <script type="module">
+        import { supabase } from '../../App/koneksi.js';
+
+        // Load Data Opsi Dropdown
+        async function loadOpsi() {
+            const filter = document.getElementById('filter-kategori').value;
+            let query = supabase.from('pengaturan_dropdown').select('*').order('kategori', { ascending: true }).order('nilai', { ascending: true });
+            
+            if(filter !== 'Semua') {
+                query = query.eq('kategori', filter);
+            }
+
+            const { data, error } = await query;
+            const tbody = document.getElementById('tbody-opsi');
+            tbody.innerHTML = '';
+
+            if (error || !data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Belum ada data opsi.</td></tr>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><span class="badge bg-secondary">${item.kategori}</span></td>
+                    <td><b>${item.nilai}</b></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-danger btn-hapus" data-id="${item.id}">Hapus</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Event listener hapus
+            document.querySelectorAll('.btn-hapus').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if(confirm('Hapus opsi ini?')) {
+                        const id = e.target.getAttribute('data-id');
+                        await supabase.from('pengaturan_dropdown').delete().eq('id', id);
+                        loadOpsi();
+                    }
+                });
+            });
+        }
+
+        // Simpan Opsi Manual
+        document.getElementById('form-tambah-opsi').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const kategori = document.getElementById('kategori').value;
+            const nilai = document.getElementById('nilai').value.trim();
+
+            const { error } = await supabase.from('pengaturan_dropdown').insert([{ kategori, nilai }]);
+            if(error) {
+                alert('Gagal menyimpan: ' + error.message);
+            } else {
+                document.getElementById('nilai').value = '';
+                loadOpsi();
+            }
+        });
+
+        // Filter Kategori Listener
+        document.getElementById('filter-kategori').addEventListener('change', loadOpsi);
+
+        // Import Massal via Excel/CSV
+        document.getElementById('btn-import').addEventListener('click', () => {
+            const fileInput = document.getElementById('file-import');
+            if(!fileInput.files[0]) return alert('Pilih file Excel/CSV terlebih dahulu!');
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+                // Validasi data
+                const validRows = jsonData.filter(row => row.kategori && row.nilai).map(row => ({
+                    kategori: String(row.kategori).trim(),
+                    nilai: String(row.nilai).trim()
+                }));
+
+                if(validRows.length === 0) return alert('Data kosong atau format kolom salah! Pastikan ada kolom "kategori" dan "nilai".');
+
+                const { error } = await supabase.from('pengaturan_dropdown').insert(validRows);
+                if(error) {
+                    alert('Gagal mengimport data: ' + error.message);
+                } else {
+                    alert(`Berhasil mengimport ${validRows.length} opsi dropdown!`);
+                    fileInput.value = '';
+                    loadOpsi();
+                }
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
+        });
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', loadOpsi);
+    </script>
+</body>
+</html>
