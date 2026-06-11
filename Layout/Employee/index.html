@@ -8,6 +8,7 @@
     <style>
         #sidebar-wrapper { width: 250px; transition: margin 0.25s ease-out; }
         .sidebar-hidden { margin-left: -250px; }
+        .stat-card { border-left: 4px solid transparent; }
     </style>
 </head>
 <body class="bg-light">
@@ -58,14 +59,68 @@
             </nav>
 
             <div class="container-fluid px-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4>Manajemen Data Pegawai</h4>
-                    <button class="btn btn-primary" id="btn-tambah" data-bs-toggle="modal" data-bs-target="#modalPegawai">
-                        + Tambah Pegawai
-                    </button>
+                
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-5 g-3 mb-4">
+                    <div class="col">
+                        <div class="card h-100 p-3 shadow-sm bg-white stat-card" style="border-left-color: #0d6efd;">
+                            <div class="text-muted small fw-bold text-uppercase">Total Pegawai</div>
+                            <div class="fs-3 fw-bold text-dark mt-1" id="stat-total">0</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 p-3 shadow-sm bg-white stat-card" style="border-left-color: #198754;">
+                            <div class="text-muted small fw-bold text-uppercase">Pegawai Aktif</div>
+                            <div class="fs-3 fw-bold text-success mt-1" id="stat-aktif">0</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 p-3 shadow-sm bg-white stat-card" style="border-left-color: #ffc107;">
+                            <div class="text-muted small fw-bold text-uppercase">Pensiun</div>
+                            <div class="fs-3 fw-bold text-warning mt-1" id="stat-pensiun">0</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 p-3 shadow-sm bg-white stat-card" style="border-left-color: #dc3545;">
+                            <div class="text-muted small fw-bold text-uppercase">Meninggal</div>
+                            <div class="fs-3 fw-bold text-danger mt-1" id="stat-meninggal">0</div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="card h-100 p-3 shadow-sm bg-white stat-card" style="border-left-color: #6c757d;">
+                            <div class="text-muted small fw-bold text-uppercase">Resign</div>
+                            <div class="fs-3 fw-bold text-secondary mt-1" id="stat-resign">0</div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="card p-3 shadow-sm mb-4">
+                <div class="card p-3 shadow-sm mb-4 bg-white">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                        <h4 class="mb-0">Manajemen Data Pegawai</h4>
+                        <div class="d-flex flex-wrap gap-2">
+                            <input type="file" id="import-excel-file" accept=".xlsx, .xls, .csv" style="display: none;">
+                            <button class="btn btn-outline-dark btn-sm fw-semibold" id="btn-trigger-import">
+                                📤 Import Data
+                            </button>
+                            
+                            <div class="dropdown">
+                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown">
+                                    📥 Download Data
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><button class="dropdown-item" id="btn-export-excel">Export Excel (.xlsx)</button></li>
+                                    <li><button class="dropdown-item" id="btn-export-csv">Export CSV (.csv)</button></li>
+                                    <li><button class="dropdown-item" id="btn-export-pdf">Export PDF (.pdf)</button></li>
+                                </ul>
+                            </div>
+
+                            <button class="btn btn-primary btn-sm fw-semibold" id="btn-tambah" data-bs-toggle="modal" data-bs-target="#modalPegawai">
+                                + Tambah Pegawai
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-3 shadow-sm mb-4 bg-white">
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label small fw-bold">Pencarian</label>
@@ -76,6 +131,9 @@
                             <select id="filter-status" class="form-select">
                                 <option value="">Semua Status</option>
                                 <option value="Aktif">Aktif</option>
+                                <option value="Pensiun">Pensiun</option>
+                                <option value="Meninggal">Meninggal</option>
+                                <option value="Resign">Resign</option>
                                 <option value="Non-Aktif">Non-Aktif</option>
                             </select>
                         </div>
@@ -116,6 +174,9 @@
                         </table>
                     </div>
                 </div>
+
+                <div id="pagination-container" class="mt-2 mb-5"></div>
+
             </div>
         </div>
     </div>
@@ -206,6 +267,9 @@
                                     <label class="form-label small fw-semibold">Status Pegawai</label>
                                     <select id="status" class="form-select">
                                         <option value="Aktif">Aktif</option>
+                                        <option value="Pensiun">Pensiun</option>
+                                        <option value="Meninggal">Meninggal</option>
+                                        <option value="Resign">Resign</option>
                                         <option value="Non-Aktif">Non-Aktif</option>
                                     </select>
                                 </div>
@@ -339,6 +403,10 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
