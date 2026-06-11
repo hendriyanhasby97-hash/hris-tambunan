@@ -217,13 +217,13 @@
                                 <div class="col-md-3">
                                     <label class="form-label small fw-semibold">Jenis Kelamin</label>
                                     <select id="jeniskelamin" class="form-select">
-                                        <option value="Pria">Pria</option>
-                                        <option value="Wanita">Wanita</option>
+                                        <option value="Laki-Laki">Laki-Laki</option>
+                                        <option value="Perepuan">Perepuan</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">Agama</label>
-                                    <input type="text" id="agama" class="form-control">
+                                    <label class="form-label">Agama</label>
+                                    <select id="emp-agama" class="form-select dynamic-dropdown" data-kategori="Agama" required></select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-semibold">Status Pernikahan</label>
@@ -274,12 +274,12 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">Kelompok Tenaga</label>
-                                    <input type="text" id="kelompoktenaga" class="form-control" placeholder="Medis, Penunjang, Administrasi, dll">
+                                    <label class="form-label">Kelompok Tenaga</label>
+                                    <select id="emp-kelompok-tenaga" class="form-select dynamic-dropdown" data-kategori="Kelompok Tenaga" required></select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">Golongan / Pangkat</label>
-                                    <input type="text" id="golongan" class="form-control">
+                                    <label class="form-label">Golongan Pangkat</label>
+                                    <select id="emp-golongan-pangkat" class="form-select dynamic-dropdown" data-kategori="Golongan Pangkat" required></select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-semibold">TMT Pangkat</label>
@@ -290,12 +290,12 @@
                                     <input type="date" id="tmtplanjut" class="form-control">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">Kelompok Jabatan</label>
-                                    <input type="text" id="kelompokjabatan" class="form-control">
+                                    <label class="form-label">Kelompok Jabatan</label>
+                                    <select id="emp-kelompok-jabatan" class="form-select dynamic-dropdown" data-kategori="Kelompok Jabatan" required></select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">Jabatan Struktural/Fungsional</label>
-                                    <input type="text" id="jabatan" class="form-control">
+                                    <label class="form-label">Jabatan</label>
+                                    <select id="emp-jabatan" class="form-select dynamic-dropdown" data-kategori="Jabatan" required></select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-semibold">TMT Jabatan</label>
@@ -306,8 +306,8 @@
                                     <input type="date" id="tmtcpns" class="form-control">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">BUP (Batas Usia Pensiun)</label>
-                                    <input type="number" id="bup" class="form-control">
+                                    <label class="form-label">BUP (Batas Usia Pensiun)</label>
+                                    <select id="emp-bup" class="form-select dynamic-dropdown" data-kategori="BUP" required></select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label small fw-semibold">TMT Pensiun</label>
@@ -322,8 +322,8 @@
                                     <input type="text" id="masakerja" class="form-control" placeholder="Contoh: 5 Tahun 2 Bulan">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label small fw-semibold">Ruangan / Unit Kerja</label>
-                                    <input type="text" id="ruangan" class="form-control">
+                                    <label class="form-label">Ruangan</label>
+                                    <select id="emp-ruangan" class="form-select dynamic-dropdown" data-kategori="Ruangan" required></select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold">No. Tata Tugas</label>
@@ -337,23 +337,22 @@
                         </div>
 
                         <div class="tab-pane fade" id="tab-pendidikan">
-                            <div class="row g-3">
-                                <div class="col-md-3">
-                                    <label class="form-label small fw-semibold">Jenjang Pendidikan</label>
-                                    <input type="text" id="jpendidikan" class="form-control" placeholder="D3, S1, S2, dll">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label small fw-semibold">Fakultas</label>
-                                    <input type="text" id="fpendidikan" class="form-control">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label small fw-semibold">Jurusan Spesifik</label>
-                                    <input type="text" id="jrspendidikan" class="form-control">
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label small fw-semibold">Asal Institusi Pendidikan</label>
-                                    <input type="text" id="asalpendidikan" class="form-control">
-                                </div>
+                            <div class="col-md-4 mb-3">
+                            <label class="form-label">Jenjang Pendidikan</label>
+                            <select id="emp-jenjang" class="form-select dynamic-dropdown" data-kategori="Jenjang" required></select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Fakultas</label>
+                            <select id="emp-fakultas" class="form-select dynamic-dropdown" data-kategori="Fakultas"></select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Jurusan</label>
+                            <select id="emp-jurusan" class="form-select dynamic-dropdown" data-kategori="Jurusan"></select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Asal Pendidikan</label>
+                            <select id="emp-asal-pendidikan" class="form-select dynamic-dropdown" data-kategori="Asal Pendidikan"></select>
+                        </div>
                                 <div class="col-md-3">
                                     <label class="form-label small fw-semibold">Tahun Lulus</label>
                                     <input type="number" id="tahunlulus" class="form-control">
