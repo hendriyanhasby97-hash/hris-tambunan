@@ -83,14 +83,15 @@ async function handleFormSubmit(e) {
             const file = fileInput.files[0];
             const fileName = `${Date.now()}_${file.name}`; 
 
+            // Sudah diganti menggunakan 'lampiran_spkrkk' (huruf kecil)
             const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('Lampiran_spkrkk')
+                .from('lampiran_spkrkk')
                 .upload(fileName, file);
 
             if (uploadError) throw uploadError;
 
             const { data: urlData } = supabase.storage
-                .from('Lampiran_spkrkk')
+                .from('lampiran_spkrkk')
                 .getPublicUrl(fileName);
 
             fileUrl = urlData.publicUrl;
@@ -185,8 +186,9 @@ async function deleteData(id, fileUrl) {
 
         if (fileUrl) {
             const fileName = fileUrl.split('/').pop();
+            // Sudah diganti menggunakan 'lampiran_spkrkk' (huruf kecil)
             await supabase.storage
-                .from('Lampiran_spkrkk')
+                .from('lampiran_spkrkk')
                 .remove([fileName]);
         }
 
@@ -213,6 +215,6 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('id-ID', options);
 }
 
-// PENTING: Daftarkan fungsi ke objek window secara global agar onclick="..." di HTML bisa membaca fungsi ini
+// Daftarkan fungsi ke objek window secara global agar onclick="..." di HTML bisa membaca fungsi ini
 window.editData = editData;
 window.deleteData = deleteData;
