@@ -1,7 +1,5 @@
-// app/app.js
 import { getPegawai, savePegawai, deletePegawai, getSummaryPegawai } from '../js/pegawai.js';
 
-// Mengambil Elemen UI
 const formPegawai = document.getElementById('formPegawai');
 const tableBody = document.getElementById('tableBody');
 const searchInput = document.getElementById('searchKeyword');
@@ -9,30 +7,33 @@ const filterStatus = document.getElementById('filterStatus');
 const filterKelTenaga = document.getElementById('filterKelTenaga');
 const filterKelJabatan = document.getElementById('filterKelJabatan');
 const paginationControls = document.getElementById('paginationControls');
+const limitSelect = document.getElementById('limitSelect');
+const paginationInfo = document.getElementById('paginationInfo');
 
-// Inisialisasi Modal Bootstrap
 const modalPegawai = new bootstrap.Modal(document.getElementById('modalPegawai'));
 
-// State Global
 let currentId = null;
 let currentPage = 1;
-const itemsPerPage = 25; // Sesuai permintaan (25 data per halaman)
+let itemsPerPage = 25; 
 
-// Jalankan ketika halaman selesai dimuat
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
     loadSummary();
 });
 
-// Event Listeners untuk Filter dan Pencarian (Otomatis memuat ulang data jika input berubah)
 [searchInput, filterStatus, filterKelTenaga, filterKelJabatan].forEach(el => {
     el.addEventListener('input', () => {
-        currentPage = 1; // Reset ke halaman pertama setiap kali memfilter
+        currentPage = 1; 
         loadData();
     });
 });
 
-// FUNGSI: Memuat Kotak Rekapitulasi
+limitSelect.addEventListener('change', (e) => {
+    itemsPerPage = parseInt(e.target.value);
+    currentPage = 1; 
+    loadData();
+});
+
 async function loadSummary() {
     try {
         const summary = await getSummaryPegawai();
@@ -47,7 +48,6 @@ async function loadSummary() {
     }
 }
 
-// FUNGSI: Memuat Data Tabel
 async function loadData() {
     try {
         tableBody.innerHTML = '<tr><td colspan="8" class="text-center">Memuat data...</td></tr>';
@@ -67,7 +67,6 @@ async function loadData() {
     }
 }
 
-// FUNGSI: Render Tabel ke HTML
 function renderTable(data, totalCount) {
     tableBody.innerHTML = '';
     if (data.length === 0) {
@@ -78,7 +77,6 @@ function renderTable(data, totalCount) {
 
     data.forEach((pegawai, index) => {
         const tr = document.createElement('tr');
-        // Kalkulasi nomor urut berdasarkan pagination
         const rowNum = (currentPage - 1) * itemsPerPage + index + 1;
         
         tr.innerHTML = `
@@ -100,40 +98,41 @@ function renderTable(data, totalCount) {
         tableBody.appendChild(tr);
     });
 
-    // Pasang Event Listener untuk tombol aksi (menggunakan currentTarget agar icon tidak terklik terpisah)
     document.querySelectorAll('.btn-edit').forEach(btn => btn.addEventListener('click', (e) => handleEdit(e.currentTarget.getAttribute('data-id'), data)));
     document.querySelectorAll('.btn-delete').forEach(btn => btn.addEventListener('click', (e) => handleDelete(e.currentTarget.getAttribute('data-id'))));
     document.querySelectorAll('.btn-view').forEach(btn => btn.addEventListener('click', (e) => handleView(e.currentTarget.getAttribute('data-id'), data)));
 
-    // Tampilkan tombol navigasi halaman bawah
     renderPagination(totalCount);
 }
 
-// FUNGSI: Render Tombol Pagination
 function renderPagination(totalCount) {
     const totalPages = Math.ceil(totalCount / itemsPerPage);
     let html = '';
     
-    // Tombol Sebelumnya
-    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+    if (totalCount === 0) {
+        paginationInfo.textContent = "Tidak ada data";
+    } else {
+        const startData = (currentPage - 1) * itemsPerPage + 1;
+        const endData = Math.min(currentPage * itemsPerPage, totalCount);
+        paginationInfo.textContent = \`Menampilkan ${startData} hingga ${endData} dari ${totalCount} data\`;
+    }
+
+    html += `<li class="page-item ${currentPage === 1 || totalCount === 0 ? 'disabled' : ''}">
                 <a class="page-link" href="#" data-page="${currentPage - 1}">Sebelumnya</a>
              </li>`;
     
-    // Angka Halaman
     for (let i = 1; i <= totalPages; i++) {
         html += `<li class="page-item ${currentPage === i ? 'active' : ''}">
                     <a class="page-link" href="#" data-page="${i}">${i}</a>
                  </li>`;
     }
 
-    // Tombol Selanjutnya
     html += `<li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}">
                 <a class="page-link" href="#" data-page="${currentPage + 1}">Selanjutnya</a>
              </li>`;
              
     paginationControls.innerHTML = html;
 
-    // Aksi Klik Pagination
     paginationControls.querySelectorAll('.page-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -146,7 +145,6 @@ function renderPagination(totalCount) {
     });
 }
 
-// HANDLE: Submit Form (Insert / Update)
 formPegawai.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(formPegawai);
@@ -156,23 +154,21 @@ formPegawai.addEventListener('submit', async (e) => {
         await savePegawai(dataObj, currentId);
         alert(currentId ? "Data berhasil diubah!" : "Data berhasil ditambahkan!");
         
-        modalPegawai.hide(); // Tutup modal setelah berhasil simpan
+        modalPegawai.hide();
         loadData();
-        loadSummary(); // Refresh angka rekap
+        loadSummary(); 
     } catch (error) {
         console.error("Error saving data:", error);
         alert("Terjadi kesalahan saat menyimpan data.");
     }
 });
 
-// HANDLE: Aksi Edit Data
 function handleEdit(id, allData) {
     const pegawai = allData.find(p => p.id_pegawai == id);
     
     if (pegawai) {
         currentId = pegawai.id_pegawai;
         
-        // Isi input form di dalam tab-tab modal
         Object.keys(pegawai).forEach(key => {
             const input = formPegawai.elements[key];
             if (input) {
@@ -185,7 +181,6 @@ function handleEdit(id, allData) {
     }
 }
 
-// HANDLE: Aksi Lihat Detail (Contoh memunculkan Pop-up Native / Bisa Anda upgrade jd Modal Detail)
 function handleView(id, allData) {
     const pegawai = allData.find(p => p.id_pegawai == id);
     if (pegawai) {
@@ -194,14 +189,13 @@ function handleView(id, allData) {
     }
 }
 
-// HANDLE: Aksi Hapus Data
 async function handleDelete(id) {
     if (confirm('Apakah Anda yakin ingin menghapus data pegawai ini?')) {
         try {
             await deletePegawai(id);
             alert('Data berhasil dihapus!');
             loadData();
-            loadSummary(); // Refresh angka rekap
+            loadSummary(); 
         } catch (error) {
             console.error("Error deleting data:", error);
             alert("Gagal menghapus data.");
@@ -209,7 +203,6 @@ async function handleDelete(id) {
     }
 }
 
-// RESET FORM KETIKA MODAL DITUTUP AGAR BERSIH UNTUK INPUT SELANJUTNYA
 document.getElementById('modalPegawai').addEventListener('hidden.bs.modal', () => {
     formPegawai.reset();
     currentId = null;
