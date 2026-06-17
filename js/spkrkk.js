@@ -1,5 +1,8 @@
-// Sesuaikan dengan endpoint API backend Anda
-const API_URL = '/api/spkrkk'; 
+// Memastikan objek supabase dari koneksi.js sudah siap
+// (Asumsi di koneksi.js nama variabelnya adalah 'supabase')
+if (!supabase) {
+    console.error("Koneksi Supabase tidak ditemukan. Pastikan koneksi.js dimuat dengan benar.");
+}
 
 // Inisialisasi Element DOM
 const tbodySpk = document.getElementById('tbodySpk');
@@ -17,23 +20,28 @@ formSpk.addEventListener('submit', handleFormSubmit);
 btnTambah.addEventListener('click', resetForm);
 
 /**
- * 1. READ - Mengambil data dari server dan menampilkannya di tabel
+ * 1. READ - Mengambil data langsung dari tabel Supabase
  */
 async function loadData() {
     try {
-        const response = await fetch(API_URL);
-        const result = await response.json();
+        tbodySpk.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Memuat data...</td></tr>`;
 
-        if (!response.ok) throw new Error(result.message || 'Gagal mengambil data');
+        // Ambil data dari tabel berkas_spkrkk diurutkan berdasarkan created_at terbaru
+        const { data, error } = await supabase
+            .from('berkas_spkrkk')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
 
         tbodySpk.innerHTML = '';
         
-        if (result.data.length === 0) {
+        if (data.length === 0) {
             tbodySpk.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Belum ada berkas tersimpan.</td></tr>`;
             return;
         }
 
-        result.data.forEach((item, index) => {
+        data.forEach((item, index) => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index + 1}</td>
@@ -42,11 +50,11 @@ async function loadData() {
                 <td>${formatDate(item.tanggal_terbit)}</td>
                 <td>${formatDate(item.tanggal_berakhir)}</td>
                 <td>
-                    <a href="${item.file_url}" target="_blank" class="btn btn-outline-info btn-sm">Lihat Berkas</a>
+                    ${item.file_url ? `<a href="${item.file_url}" target="_blank" class="btn btn-outline-info btn-sm">Lihat Berkas</a>` : '-'}
                 </td>
                 <td>
                     <button class="btn btn-warning btn-sm me-1" onclick="editData('${item.id}')">Edit</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteData('${item.id}')">Hapus</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteData('${item.id}', '${item.file_url}')">Hapus</button>
                 </td>
             `;
             tbodySpk.appendChild(row);
@@ -59,99 +67,155 @@ async function loadData() {
 }
 
 /**
- * 2. CREATE & UPDATE - Menangani submit form (Tambah/Edit)
+ * 2. CREATE & UPDATE - Simpan data dan Handle Upload File ke Supabase Storage
  */
 async function handleFormSubmit(e) {
     e.preventDefault();
 
     const id = spkIdInput.value;
-    const formData = new FormData(formSpk);
+    const nik = document.getElementById('nik').value;
+    const no_spk = document.getElementById('no_spk').value;
+    const tanggal_terbit = document.getElementById('tanggal_terbit').value;
+    const tanggal_berakhir = document.getElementById('tanggal_berakhir').value;
+    const fileInput = document.getElementById('file_url');
     
-    // Tentukan method dan URL berdasarkan kondisi ID (kosong = Create, isi = Update)
-    const isEdit = id !== "";
-    const url = isEdit ? `${API_URL}/${id}` : API_URL;
-    const method = isEdit ? 'PUT' : 'POST';
-
     try {
-        const response = await fetch(url, {
-            method: method,
-            body: formData // Menggunakan FormData karena menyertakan file_url (file binary)
-        });
+        let fileUrl = null;
 
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message || 'Gagal menyimpan data');
+        // Proses upload file jika user memilih file baru
+        if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            // Membuat nama file unik (contoh: 1718291029_namafile.pdf)
+            const fileName = `${Date.now()}_${file.name}`; 
 
-        alert(result.message || 'Data berhasil disimpan!');
+            // Upload ke Storage Bucket 'Lampiran_spkrkk'
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('Lampiran_spkrkk')
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            // Dapatkan Public URL dari file yang di-upload
+            const { data: urlData } = supabase.storage
+                .from('Lampiran_spkrkk')
+                .getPublicUrl(fileName);
+
+            fileUrl = urlData.publicUrl;
+        }
+
+        if (id === "") {
+            // --- PROSES INSERT (TAMBAH DATA) ---
+            const { error: insertError } = await supabase
+                .from('berkas_spkrkk')
+                .insert([{ 
+                    nik, 
+                    no_spk, 
+                    tanggal_terbit, 
+                    tanggal_berakhir, 
+                    file_url: fileUrl 
+                }]);
+
+            if (insertError) throw insertError;
+            alert('Data berkas berhasil ditambahkan!');
+
+        } else {
+            // --- PROSES UPDATE (EDIT DATA) ---
+            const updateData = { nik, no_spk, tanggal_terbit, tanggal_berakhir };
+            
+            // Jika user upload file baru, update kolom file_url nya
+            if (fileUrl) {
+                updateData.file_url = fileUrl;
+            }
+
+            const { error: updateError } = await supabase
+                .from('berkas_spkrkk')
+                .update(updateData)
+                .eq('id', id);
+
+            if (updateError) throw updateError;
+            alert('Data berkas berhasil diperbarui!');
+        }
+
         modalSpk.hide();
-        loadData(); // Refresh tabel
+        loadData();
 
     } catch (error) {
         console.error(error);
-        alert(`Gagal: ${error.message}`);
+        alert(`Gagal menyimpan data: ${error.message}`);
     }
 }
 
 /**
- * 3. EDIT POPULATE - Mengambil satu data dan memasukkannya ke form modal
+ * 3. EDIT POPULATE - Mengambil 1 data untuk dimasukkan ke form modal
  */
 async function editData(id) {
     resetForm();
     modalSpkLabel.innerText = "Edit Berkas SPK RKK";
     
     try {
-        const response = await fetch(`${API_URL}/${id}`);
-        const result = await response.json();
+        const { data, error } = await supabase
+            .from('berkas_spkrkk')
+            .select('*')
+            .eq('id', id)
+            .single();
 
-        if (!response.ok) throw new Error(result.message || 'Gagal mengambil detail data');
+        if (error) throw error;
 
-        const data = result.data;
-        
-        // Isi form dengan data yang didapat
+        // Masukkan data ke dalam form modal
         spkIdInput.value = data.id;
         document.getElementById('nik').value = data.nik;
         document.getElementById('no_spk').value = data.no_spk;
-        document.getElementById('tanggal_terbit').value = data.tanggal_terbit.split('T')[0]; // Ambil YYYY-MM-DD saja
-        document.getElementById('tanggal_berakhir').value = data.tanggal_berakhir.split('T')[0];
+        document.getElementById('tanggal_terbit').value = data.tanggal_terbit;
+        document.getElementById('tanggal_berakhir').value = data.tanggal_berakhir;
         
-        // Tampilkan info file lama jika ada
         if (data.file_url) {
             editFilePreview.style.display = 'block';
-            editFilePreview.innerHTML = `File saat ini: <a href="${data.file_url}" target="_blank">Lihat Berkas</a> <br><small class="text-muted">*Biarkan kosong jika tidak ingin mengubah berkas</small>`;
+            editFilePreview.innerHTML = `File saat ini: <a href="${data.file_url}" target="_blank">Lihat Berkas</a> <br><small class="text-muted">*Biarkan kosong jika tidak ingin mengganti berkas</small>`;
         }
 
         modalSpk.show();
 
     } catch (error) {
         console.error(error);
-        alert(`Gagal memuat data edit: ${error.message}`);
+        alert(`Gagal memuat data: ${error.message}`);
     }
 }
 
 /**
- * 4. DELETE - Menghapus data berdasarkan ID
+ * 4. DELETE - Menghapus data di tabel & menghapus berkas di storage jika ada
  */
-async function deleteData(id) {
-    if (!confirm('Apakah Anda yakin ingin menghapus berkas SPK RKK ini?')) return;
+async function deleteData(id, fileUrl) {
+    if (!confirm('Apakah Anda yakin ingin menghapus berkas ini?')) return;
 
     try {
-        const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
-        });
+        // Hapus data baris di tabel berkas_spkrkk
+        const { error: deleteError } = await supabase
+            .from('berkas_spkrkk')
+            .delete()
+            .eq('id', id);
 
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message || 'Gagal menghapus data');
+        if (deleteError) throw deleteError;
 
-        alert(result.message || 'Data berhasil dihapus!');
-        loadData(); // Refresh tabel
+        // Opsional: Hapus file dari Storage jika file_url tersedia
+        if (fileUrl) {
+            // Ambil nama file asli dari URL supa-storage Anda
+            const fileName = fileUrl.split('/').pop();
+            await supabase.storage
+                .from('Lampiran_spkrkk')
+                .remove([fileName]);
+        }
+
+        alert('Data berhasil dihapus!');
+        loadData();
 
     } catch (error) {
         console.error(error);
-        alert(`Gagal menghapus: ${error.message}`);
+        alert(`Gagal menghapus data: ${error.message}`);
     }
 }
 
 /**
- * Helper: Reset Form ke kondisi awal
+ * Helper: Reset Form
  */
 function resetForm() {
     formSpk.reset();
@@ -162,7 +226,7 @@ function resetForm() {
 }
 
 /**
- * Helper: Format Tanggal ke format lokal Indonesia (DD/MM/YYYY)
+ * Helper: Format Tanggal ke format Indonesia (DD/MM/YYYY)
  */
 function formatDate(dateString) {
     if (!dateString) return '-';
