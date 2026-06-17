@@ -114,7 +114,9 @@ function renderPagination(totalCount) {
     } else {
         const startData = (currentPage - 1) * itemsPerPage + 1;
         const endData = Math.min(currentPage * itemsPerPage, totalCount);
-        paginationInfo.textContent = \'Menampilkan ${startData} hingga ${endData} dari ${totalCount} data\';
+        
+        // PASTIKAN BARIS INI MENGGUNAKAN BACKTICK (`) BUKAN KUTIP SATU (')
+        paginationInfo.textContent = `Menampilkan ${startData} hingga ${endData} dari ${totalCount} data`;
     }
 
     html += `<li class="page-item ${currentPage === 1 || totalCount === 0 ? 'disabled' : ''}">
