@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Kepegawaian</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card-counter { transition: transform 0.2s; }
+        .card-counter:hover { transform: translateY(-3px); }
+        .chart-container { position: relative; height: 250px; width: 100%; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <div class="container-fluid mt-4 mb-5 px-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom pb-3 mb-4 gap-3">
+            <div>
+                <h4 class="mb-0 text-dark font-weight-bold">Dashboard Analisis Kepegawaian</h4>
+                <p class="text-muted small mb-0">Sistem Informasi Manajemen SDM & Dashboard Real-time</p>
+            </div>
+            <div class="d-flex gap-2">
+                <button id="btnExportExcel" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1">
+                    💾 Export Excel (Belum Update)
+                </button>
+                <button id="btnExportPdf" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
+                    📄 Export PDF (Belum Update)
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="card card-counter shadow-sm border-start border-primary border-4">
+                    <div class="card-body">
+                        <h6 class="text-muted text-uppercase small">Total Pegawai</h6>
+                        <h3 class="mb-0 font-weight-bold id" id="txtTotal">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card card-counter shadow-sm border-start border-success border-4">
+                    <div class="card-body">
+                        <h6 class="text-muted text-uppercase small">Pegawai Aktif</h6>
+                        <h3 class="mb-0 text-success font-weight-bold" id="txtAktif">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card card-counter shadow-sm border-start border-info border-4">
+                    <div class="card-body">
+                        <h6 class="text-muted text-uppercase small">Pegawai Masuk</h6>
+                        <h3 class="mb-0 text-info font-weight-bold" id="txtMasuk">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card card-counter shadow-sm border-start border-danger border-4">
+                    <div class="card-body">
+                        <h6 class="text-muted text-uppercase small">Pegawai Keluar</h6>
+                        <h3 class="mb-0 text-danger font-weight-bold" id="txtKeluar">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white font-weight-bold text-secondary">📊 Analisis Berdasarkan Kelompok Tenaga</div>
+                    <div class="card-body row align-items-center g-3">
+                        <div class="col-lg-4"><div class="table-responsive"><table class="table table-sm table-bordered table-hover align-middle mb-0"><thead class="table-light"><tr><th>Kategori</th><th>Total</th><th>Persen</th></tr></thead><tbody id="tblTenaga"></tbody></table></div></div>
+                        <div class="col-lg-4"><div class="chart-container"><canvas id="chartTenagaBar"></canvas></div></div>
+                        <div class="col-lg-4"><div class="chart-container"><canvas id="chartTenagaPie"></canvas></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white font-weight-bold text-secondary">📊 Analisis Berdasarkan Kelompok Jabatan</div>
+                    <div class="card-body row align-items-center g-3">
+                        <div class="col-lg-4"><div class="table-responsive"><table class="table table-sm table-bordered table-hover align-middle mb-0"><thead class="table-light"><tr><th>Kategori</th><th>Total</th><th>Persen</th></tr></thead><tbody id="tblJabatan"></tbody></table></div></div>
+                        <div class="col-lg-4"><div class="chart-container"><canvas id="chartJabatanBar"></canvas></div></div>
+                        <div class="col-lg-4"><div class="chart-container"><canvas id="chartJabatanPie"></canvas></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white font-weight-bold text-secondary">📊 Analisis Berdasarkan Jenis Kelamin</div>
+                    <div class="card-body row align-items-center g-3">
+                        <div class="col-lg-4"><div class="table-responsive"><table class="table table-sm table-bordered table-hover align-middle mb-0"><thead class="table-light"><tr><th>Kategori</th><th>Total</th><th>Persen</th></tr></thead><tbody id="tblGender"></tbody></table></div></div>
+                        <div class="col-lg-4"><div class="chart-container"><canvas id="chartGenderBar"></canvas></div></div>
+                        <div class="col-lg-4"><div class="chart-container"><canvas id="chartGenderPie"></canvas></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white font-weight-bold text-secondary">📊 Analisis Berdasarkan Agama</div>
+                    <div class="card-body row align-items-center g-3">
+                        <div class="col-lg-4"><div class="table-responsive"><table class="table table-sm table-bordered table-hover align-middle mb-0"><thead class="table-light"><tr><th>Kategori</th><th>Total</th><th>Persen</th></tr></thead><tbody id="tblAgama"></tbody></table></div></div>
+                        <div class="col-lg-4"><div class="chart-container"><canvas id="chartAgamaBar"></canvas></div></div>
+                        <div class="col-lg-4"><div class="chart-container"><canvas id="chartAgamaPie"></canvas></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white font-weight-bold text-secondary">📊 Analisis Pendidikan (Jenjang, Fakultas & Jurusan)</div>
+                    <div class="card-body">
+                        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                            <li class="nav-item" role="presentation"><button class="nav-link active btn-sm" id="tab-jenjang" data-bs-toggle="pill" data-bs-target="#panel-jenjang" type="button" role="tab">Jenjang</button></li>
+                            <li class="nav-item" role="presentation"><button class="nav-link btn-sm" id="tab-fakultas" data-bs-toggle="pill" data-bs-target="#panel-fakultas" type="button" role="tab">Fakultas</button></li>
+                            <li class="nav-item" role="presentation"><button class="nav-link btn-sm" id="tab-jurusan" data-bs-toggle="pill" data-bs-target="#panel-jurusan" type="button" role="tab">Jurusan</button></li>
+                        </ul>
+                        <div class="tab-content" id="pills-tabContent">
+                            <div class="tab-pane fade show active" id="panel-jenjang" role="tabpanel">
+                                <div class="row align-items-center g-3">
+                                    <div class="col-lg-4"><div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead class="table-light"><tr><th>Jenjang</th><th>Total</th><th>Persen</th></tr></thead><tbody id="tblJenjang"></tbody></table></div></div>
+                                    <div class="col-lg-4"><div class="chart-container"><canvas id="chartJenjangBar"></canvas></div></div>
+                                    <div class="col-lg-4"><div class="chart-container"><canvas id="chartJenjangPie"></canvas></div></div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="panel-fakultas" role="tabpanel">
+                                <div class="row align-items-center g-3">
+                                    <div class="col-lg-4"><div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead class="table-light"><tr><th>Fakultas</th><th>Total</th><th>Persen</th></tr></thead><tbody id="tblFakultas"></tbody></table></div></div>
+                                    <div class="col-lg-4"><div class="chart-container"><canvas id="chartFakultasBar"></canvas></div></div>
+                                    <div class="col-lg-4"><div class="chart-container"><canvas id="chartFakultasPie"></canvas></div></div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="panel-jurusan" role="tabpanel">
+                                <div class="row align-items-center g-3">
+                                    <div class="col-lg-4"><div class="table-responsive"><table class="table table-sm table-bordered mb-0"><thead class="table-light"><tr><th>Jurusan</th><th>Total</th><th>Persen</th></tr></thead><tbody id="tblJurusan"></tbody></table></div></div>
+                                    <div class="col-lg-4"><div class="chart-container"><canvas id="chartJurusanBar"></canvas></div></div>
+                                    <div class="col-lg-4"><div class="chart-container"><canvas id="chartJurusanPie"></canvas></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script type="module" src="../js/dashboard.js"></script>
+</body>
+</html>
