@@ -76,16 +76,22 @@
                 <div class="col-md-2">
                     <select id="filterKelTenaga" class="form-select">
                         <option value="">-- Kelompok Tenaga --</option>
-                        <option value="Medis">Medis</option>
-                        <option value="Perawat">Perawat</option>
-                        <option value="Non Medis">Non Medis</option>
+                        <option value="ASN">ASN</option>
+                        <option value="APBD">APBD</option>
+                        <option value="BLUD">BLUD</option>
+                        <option value="Konsultan">Konsultan</option>
+                        <option value="Magang">Magang</option>
                     </select>
                 </div>
                 <div class="col-md-2">
                     <select id="filterKelJabatan" class="form-select">
                         <option value="">-- Kelompok Jabatan --</option>
-                        <option value="Struktural">Struktural</option>
-                        <option value="Fungsional">Fungsional</option>
+                        <option value="Struktural">Management</option>
+                        <option value="Struktural">Tenaga Medis</option>
+                        <option value="Fungsional">Tenaga Kesehatan</option>
+                        <option value="Fungsional">Tenaga Penunjang Medis</option>
+                        <option value="Fungsional">Tenaga Administrasi</option>
+                        <option value="Fungsional">Tenaga Non Administrasi</option>
                     </select>
                 </div>
                 <div class="col-md-3 text-md-end">
@@ -328,7 +334,21 @@
         </div>
     </div>
 </div>
-
+<div class="modal fade" id="modalDetailPegawai" tabindex="-1" aria-labelledby="modalDetailLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="modalDetailLabel">Detail Lengkap Pegawai</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detailBody" style="max-height: 70vh; overflow-y: auto;">
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script type="module" src="../app/app.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
