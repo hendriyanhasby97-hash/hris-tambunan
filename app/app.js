@@ -207,10 +207,32 @@ function handleEdit(id, allData) {
 
 function handleView(id, allData) {
     const pegawai = allData.find(p => p.id_pegawai == id);
-    if (pegawai) {
-        let detail = `DETAIL PEGAWAI:\n\nNIK: ${pegawai.nik || '-'}\nNama: ${pegawai.nama || '-'}\nJabatan: ${pegawai.jabatan || '-'}\nStatus: ${pegawai.status || '-'}\nAlamat: ${pegawai.alamat || '-'}\nNo Telp: ${pegawai.no_telp || '-'}`;
-        alert(detail);
-    }
+    if (!pegawai) return;
+
+    const detailBody = document.getElementById('detailBody');
+    let html = '<div class="row">';
+    
+    // Looping semua key data pegawai untuk ditampilkan
+    Object.keys(pegawai).forEach(key => {
+        // Mengganti underscore dengan spasi agar lebih rapi
+        const label = key.replace(/_/g, ' ').toUpperCase();
+        const value = pegawai[key] || '-';
+        
+        html += `
+            <div class="col-md-6 mb-2">
+                <div class="card p-2 bg-light">
+                    <small class="text-muted">${label}</small>
+                    <div class="fw-bold">${value}</div>
+                </div>
+            </div>`;
+    });
+    
+    html += '</div>';
+    detailBody.innerHTML = html;
+
+    // Menampilkan Modal
+    const myModal = new bootstrap.Modal(document.getElementById('modalDetailPegawai'));
+    myModal.show();
 }
 
 async function handleDelete(id) {
