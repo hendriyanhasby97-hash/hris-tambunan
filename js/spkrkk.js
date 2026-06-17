@@ -13,11 +13,15 @@ const btnTambah = document.getElementById('btnTambah');
 
 const nikInput = document.getElementById('nik');
 const namaInput = document.getElementById('nama');
+const filterTahun = document.getElementById('filterTahun');
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', loadData);
 formSpk.addEventListener('submit', handleFormSubmit);
 btnTambah.addEventListener('click', resetForm);
+
+// Listener saat user mengubah pilihan filter tahun
+filterTahun.addEventListener('change', loadData);
 
 // Listener saat user selesai mengisi NIK (pindah fokus atau menekan enter)
 nikInput.addEventListener('change', CariNamaPegawai);
@@ -35,12 +39,11 @@ async function CariNamaPegawai() {
     try {
         namaInput.value = 'Mencari data...';
 
-        // Query ke tabel 'pegawai' mencari kolom 'nama' berdasarkan 'nik'
         const { data, error } = await supabase
             .from('pegawai')
             .select('nama')
             .eq('nik', nikValue)
-            .maybeSingle(); // Mengembalikan 1 data atau null jika tidak ada (tidak bikin crash)
+            .maybeSingle();
 
         if (error) throw error;
 
@@ -60,23 +63,36 @@ async function CariNamaPegawai() {
 }
 
 /**
- * 1. READ - Ambil data dari Supabase
+ * 1. READ - Ambil data dari Supabase (Dengan Fitur Filter Tahun)
  */
 async function loadData() {
     try {
         tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Memuat data...</td></tr>`;
 
-        const { data, error } = await supabase
+        // Mempersiapkan struktur query awal
+        let query = supabase
             .from('berkas_spkrkk')
-            .select('*')
-            .order('created_at', { ascending: false });
+            .select('*');
+
+        // Mengambil nilai tahun dari dropdown filter
+        const tahunTerpilih = filterTahun.value;
+
+        // Jika filter tahun diisi (bukan "Semua Tahun")
+        if (tahunTerpilih) {
+            query = query
+                .gte('tanggal_terbit', `${tahunTerpilih}-01-01`)
+                .lte('tanggal_terbit', `${tahunTerpilih}-12-31`);
+        }
+
+        // Jalankan eksekusi query dengan pengurutan terbaru
+        const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) throw error;
 
         tbodySpk.innerHTML = '';
         
         if (data.length === 0) {
-            tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Belum ada berkas tersimpan.</td></tr>`;
+            tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Belum ada berkas tersimpan pada periode ini.</td></tr>`;
             return;
         }
 
