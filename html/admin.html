@@ -6,113 +6,188 @@
     <title>Superadmin - Panel Kendali SDM</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        body { overflow-hidden: hidden; height: 100vh; background-color: #f8f9fa; }
-        .wrapper { display: flex; height: 100vh; width: 100%; }
+        body { overflow: hidden; height: 100vh; background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .wrapper { display: flex; height: 100vh; width: 100%; overflow: hidden; }
         
-        /* Sidebar Styling */
+        /* SIDEBAR STYLING */
         .sidebar { 
-            width: 260px; 
-            background-color: #212529; 
+            width: 270px; 
+            min-width: 270px;
+            background-color: #1e2229; 
             color: #fff; 
             display: flex; 
             flex-direction: column;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border-right: 1px solid #2d323e;
         }
-        .sidebar-header { padding: 20px; background-color: #1a1d20; border-bottom: 1px solid #2c3034; }
-        .sidebar-menu { flex: 1; padding: 15px 0; overflow-y: auto; }
-        .menu-label { padding: 5px 20px; font-size: 11px; text-transform: uppercase; color: #6c757d; letter-spacing: 1px; font-weight: bold; }
+        /* Class khusus saat sidebar disembunyikan */
+        .sidebar.toggled { 
+            margin-left: -270px; 
+        }
+        .sidebar-header { padding: 18px 20px; background-color: #171a21; border-bottom: 1px solid #252932; }
+        .sidebar-menu { flex: 1; padding: 10px 0; overflow-y: auto; }
+        
+        /* Menu Item & Dropdown Styling */
         .nav-link-custom { 
             display: flex; 
             align-items: center; 
-            padding: 10px 20px; 
-            color: #c2c7d0; 
+            justify-content: space-between;
+            padding: 11px 20px; 
+            color: #b8c7ce; 
             text-decoration: none; 
             font-size: 14px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            cursor: pointer;
         }
-        .nav-link-custom:hover { background-color: #2c3034; color: #fff; }
-        .nav-link-custom.active { background-color: #0d6efd; color: #fff; font-weight: bold; }
+        .nav-link-custom:hover { background-color: #2c313d; color: #fff; }
+        .nav-link-custom.active { background-color: #0d6efd; color: #fff; font-weight: 600; }
         
-        /* Main Content Styling */
-        .content-area { flex: 1; display: flex; flex-direction: column; height: 100vh; }
-        .top-navbar { height: 60px; background-color: #fff; border-bottom: 1px solid #e3e6f0; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
-        .iframe-container { flex: 1; width: 100%; height: calc(100vh - 60px); border: none; }
+        /* Submenu Indentasi */
+        .submenu-list { background-color: #16181d; list-style: none; padding: 0; margin: 0; }
+        .submenu-item { 
+            display: block;
+            padding: 9px 20px 9px 45px; 
+            color: #a0aab4; 
+            text-decoration: none; 
+            font-size: 13.5px;
+            transition: all 0.2s ease;
+        }
+        .submenu-item:hover { color: #fff; background-color: #22252c; }
+        .submenu-item.active { color: #38bdf8; font-weight: 600; background-color: #1f232b; }
+        
+        /* Rotasi Panah Dropdown */
+        .arrow-icon { transition: transform 0.2s ease; font-size: 11px; color: #6c757d; }
+        .nav-link-custom[aria-expanded="true"] .arrow-icon { transform: rotate(90deg); color: #fff; }
+
+        /* MAIN CONTENT AREA STYLING */
+        .content-area { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; width: 100%; }
+        .top-navbar { height: 56px; background-color: #fff; border-bottom: 1px solid #e3e6f0; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
+        .iframe-container { flex: 1; width: 100%; height: calc(100vh - 56px); border: none; background-color: #f8f9fa; }
+        #btnToggleSidebar { font-size: 20px; padding: 0 10px; cursor: pointer; color: #495057; border: none; background: none; }
+        #btnToggleSidebar:hover { color: #0d6efd; }
     </style>
 </head>
 <body>
 
     <div class="wrapper">
-        <!-- SIDEBAR UTAMA -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h5 class="mb-0 fw-bold text-truncate">👑 SUPERADMIN</h5>
-                <small class="text-muted">Panel Manajemen Kepegawaian</small>
+        <!-- SIDEBAR UTAMA ACCORDION -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header d-flex align-items-center justify-content-between">
+                <div>
+                    <h6 class="mb-0 fw-bold text-white tracking-wide">👑 PANEL SUPERADMIN</h6>
+                    <small class="text-muted" style="font-size: 11px;">SIM Kepegawaian RS</small>
+                </div>
             </div>
             
-            <div class="sidebar-menu">
-                <div class="menu-label">Utama</div>
-                <a href="dashboard.html" class="nav-link-custom active" data-target="dashboard.html">
-                    📊 Dashboard Analisis
+            <div class="sidebar-menu" id="sidebarAccordion">
+                <!-- 1. DASHBOARD SINGLE LINK -->
+                <a href="dashboard.html" class="nav-link-custom active" data-target="dashboard.html" data-is-sub="false">
+                    <span><i class="bi bi-speedometer2 me-2"></i> Dashboard Analisis</span>
                 </a>
                 
-                <div class="menu-label mt-3">Mutasi & Pegawai</div>
-                <a href="pegawai-masuk.html" class="nav-link-custom" data-target="pegawai-masuk.html">
-                    📥 Data Pegawai Masuk
-                </a>
-                <a href="pegawai-keluar.html" class="nav-link-custom" data-target="pegawai-keluar.html">
-                    📤 Data Pegawai Keluar
-                </a>
+                <!-- 2. DROPDOWN: DATA PEGAWAI & MUTASI -->
+                <div class="menu-group">
+                    <a class="nav-link-custom" data-bs-toggle="collapse" data-bs-target="#dropPegawai" aria-expanded="false">
+                        <span><i class="bi bi-people me-2"></i> Data Pegawai & Mutasi</span>
+                        <i class="bi bi-chevron-right arrow-icon"></i>
+                    </a>
+                    <div id="dropPegawai" class="collapse" data-bs-parent="#sidebarAccordion">
+                        <div class="submenu-list">
+                            <a href="master-pegawai.html" class="submenu-item" data-target="master-pegawai.html">1. Master Data Pegawai</a>
+                            <a href="pegawai-keluar.html" class="submenu-item" data-target="pegawai-keluar.html">2. Pegawai Keluar</a>
+                            <a href="pegawai-masuk.html" class="submenu-item" data-target="pegawai-masuk.html">3. Pegawai Masuk</a>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="menu-label mt-3">Kredensial / Berkas Profesi</div>
-                <a href="str.html" class="nav-link-custom" data-target="str.html">
-                    💳 Berkas STR
-                </a>
-                <a href="sik.html" class="nav-link-custom" data-target="sik.html">
-                    📜 Berkas SIK / SIP
-                </a>
+                <!-- 3. DROPDOWN: KREDENSIAL / PROFESI -->
+                <div class="menu-group">
+                    <a class="nav-link-custom" data-bs-toggle="collapse" data-bs-target="#dropKredensial" aria-expanded="false">
+                        <span><i class="bi bi-card-checklist me-2"></i> Kredensial / Profesi</span>
+                        <i class="bi bi-chevron-right arrow-icon"></i>
+                    </a>
+                    <div id="dropKredensial" class="collapse" data-bs-parent="#sidebarAccordion">
+                        <div class="submenu-list">
+                            <a href="str.html" class="submenu-item" data-target="str.html">1. Berkas STR</a>
+                            <a href="sik.html" class="submenu-item" data-target="sik.html">2. Berkas SIK</a>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="menu-label mt-3">Kinerja & Kompetensi</div>
-                <a href="spkrkk.html" class="nav-link-custom" data-target="spkrkk.html">
-                    📂 Berkas SPK RKK
-                </a>
-                <a href="oppe.html" class="nav-link-custom" data-target="oppe.html">
-                    📈 Berkas OPPE
-                </a>
-                <a href="skp.html" class="nav-link-custom" data-target="skp.html">
-                    📝 Berkas SKP Pegawai
-                </a>
-                <a href="sertifikat.html" class="nav-link-custom" data-target="sertifikat.html">
-                    🏅 Sertifikat Pelatihan
-                </a>
+                <!-- 4. DROPDOWN: KINERJA / KOMPETENSI -->
+                <div class="menu-group">
+                    <a class="nav-link-custom" data-bs-toggle="collapse" data-bs-target="#dropKinerja" aria-expanded="false">
+                        <span><i class="bi bi-bar-chart-line me-2"></i> Kinerja / Kompetensi</span>
+                        <i class="bi bi-chevron-right arrow-icon"></i>
+                    </a>
+                    <div id="dropKinerja" class="collapse" data-bs-parent="#sidebarAccordion">
+                        <div class="submenu-list">
+                            <a href="spkrkk.html" class="submenu-item" data-target="spkrkk.html">1. SPK & RKK</a>
+                            <a href="oppe.html" class="submenu-item" data-target="oppe.html">2. Berkas OPPE</a>
+                            <a href="skp.html" class="submenu-item" data-target="skp.html">3. SKP Pegawai</a>
+                            <a href="sertifikat.html" class="submenu-item" data-target="sertifikat.html">4. Sertifikat Pelatihan</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. DROPDOWN: PENGATURAN DATA MASTER -->
+                <div class="menu-group">
+                    <a class="nav-link-custom" data-bs-toggle="collapse" data-bs-target="#dropPengaturan" aria-expanded="false">
+                        <span><i class="bi bi-gear me-2"></i> Pengaturan Master</span>
+                        <i class="bi bi-chevron-right arrow-icon"></i>
+                    </a>
+                    <div id="dropPengaturan" class="collapse" data-bs-parent="#sidebarAccordion">
+                        <div class="submenu-list">
+                            <a href="master-jabatan.html" class="submenu-item" data-target="master-jabatan.html">1. Master Jabatan</a>
+                            <a href="master-pangkat.html" class="submenu-item" data-target="master-pangkat.html">2. Master Pangkat / Golongan</a>
+                            <a href="master-ruangan.html" class="submenu-item" data-target="master-ruangan.html">3. Master Ruangan</a>
+                            <a href="master-kelompok-pegawai.html" class="submenu-item" data-target="master-kelompok-pegawai.html">4. Master Kelompok Pegawai</a>
+                            <a href="master-kelompok-jabatan.html" class="submenu-item" data-target="master-kelompok-jabatan.html">5. Master Kelompok Jabatan</a>
+                            <a href="rentang-bup.html" class="submenu-item" data-target="rentang-bup.html">6. Rentang BUP</a>
+                            <a href="master-jenjang.html" class="submenu-item" data-target="master-jenjang.html">7. Master Jenjang Pendidikan</a>
+                            <a href="master-fakultas.html" class="submenu-item" data-target="master-fakultas.html">8. Master Fakultas</a>
+                            <a href="master-jurusan.html" class="submenu-item" data-target="master-jurusan.html">9. Master Jurusan</a>
+                            <a href="master-bidang.html" class="submenu-item" data-target="master-bidang.html">10. Master Bidang</a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- AREA KONTEN UTAMA -->
+        <!-- WORKSPACE AREA UTAMA -->
         <div class="content-area">
             <!-- Topbar Panel -->
             <div class="top-navbar">
-                <div class="d-flex align-items-center">
-                    <h6 class="mb-0 text-secondary" id="pageTitle">Dashboard Analisis</h6>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Tombol Sembunyikan Sidebar -->
+                    <button id="btnToggleSidebar" title="Sembunyikan/Tampilkan Sidebar">
+                        <i class="bi bi-list"></i>
+                    </button>
+                    <h6 class="mb-0 fw-bold text-dark ms-2" id="pageTitle">Dashboard Analisis</h6>
                 </div>
+                
                 <div class="dropdown">
-                    <button class="btn btn-light btn-sm dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown">
-                        👤 Administrator
+                    <button class="btn btn-light btn-sm dropdown-toggle shadow-sm border" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-1"></i> Administrator
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow">
-                        <li><a class="dropdown-content dropdown-item text-danger small" href="#" id="btnLogout">🚪 Keluar Sistem</a></li>
+                        <li><a class="dropdown-item text-danger small" href="#" id="btnLogout"><i class="bi bi-box-arrow-right me-2"></i> Keluar Sistem</a></li>
                     </ul>
                 </div>
             </div>
 
-            <!-- CONTAINER DYNAMIC CONTENT (IFRAME) -->
+            <!-- EMBED FRAME KONTEN UTAMA -->
             <iframe id="mainFrame" src="dashboard.html" class="iframe-container"></iframe>
         </div>
     </div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Script Hub Core JS -->
+    <!-- Script Hub Controller JS -->
     <script type="module" src="../js/admin.js"></script>
 </body>
 </html>
