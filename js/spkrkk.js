@@ -11,17 +11,60 @@ const spkIdInput = document.getElementById('spkId');
 const editFilePreview = document.getElementById('editFilePreview');
 const btnTambah = document.getElementById('btnTambah');
 
+const nikInput = document.getElementById('nik');
+const namaInput = document.getElementById('nama');
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', loadData);
 formSpk.addEventListener('submit', handleFormSubmit);
 btnTambah.addEventListener('click', resetForm);
+
+// Listener saat user selesai mengisi NIK (pindah fokus atau menekan enter)
+nikInput.addEventListener('change', CariNamaPegawai);
+
+/**
+ * 0. AUTO POPULATE - Cari nama berdasarkan NIK di tabel pegawai
+ */
+async function CariNamaPegawai() {
+    const nikValue = nikInput.value.trim();
+    if (!nikValue) {
+        namaInput.value = '';
+        return;
+    }
+
+    try {
+        namaInput.value = 'Mencari data...';
+
+        // Query ke tabel 'pegawai' mencari kolom 'nama' berdasarkan 'nik'
+        const { data, error } = await supabase
+            .from('pegawai')
+            .select('nama')
+            .eq('nik', nikValue)
+            .maybeSingle(); // Mengembalikan 1 data atau null jika tidak ada (tidak bikin crash)
+
+        if (error) throw error;
+
+        if (data) {
+            namaInput.value = data.nama;
+        } else {
+            namaInput.value = '';
+            alert(`NIK "${nikValue}" tidak ditemukan di database pegawai!`);
+            nikInput.value = '';
+            nikInput.focus();
+        }
+    } catch (error) {
+        console.error(error);
+        namaInput.value = '';
+        alert(`Gagal memuat nama pegawai: ${error.message}`);
+    }
+}
 
 /**
  * 1. READ - Ambil data dari Supabase
  */
 async function loadData() {
     try {
-        tbodySpk.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Memuat data...</td></tr>`;
+        tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Memuat data...</td></tr>`;
 
         const { data, error } = await supabase
             .from('berkas_spkrkk')
@@ -33,7 +76,7 @@ async function loadData() {
         tbodySpk.innerHTML = '';
         
         if (data.length === 0) {
-            tbodySpk.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Belum ada berkas tersimpan.</td></tr>`;
+            tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Belum ada berkas tersimpan.</td></tr>`;
             return;
         }
 
@@ -42,6 +85,7 @@ async function loadData() {
             row.innerHTML = `
                 <td>${index + 1}</td>
                 <td><b>${item.nik}</b></td>
+                <td>${item.nama || '-'}</td>
                 <td>${item.no_spk}</td>
                 <td>${formatDate(item.tanggal_terbit)}</td>
                 <td>${formatDate(item.tanggal_berakhir)}</td>
@@ -58,7 +102,7 @@ async function loadData() {
 
     } catch (error) {
         console.error(error);
-        tbodySpk.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error: ${error.message}</td></tr>`;
+        tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error: ${error.message}</td></tr>`;
     }
 }
 
@@ -69,7 +113,8 @@ async function handleFormSubmit(e) {
     e.preventDefault();
 
     const id = spkIdInput.value;
-    const nik = document.getElementById('nik').value;
+    const nik = nikInput.value;
+    const nama = namaInput.value;
     const no_spk = document.getElementById('no_spk').value;
     const tanggal_terbit = document.getElementById('tanggal_terbit').value;
     const tanggal_berakhir = document.getElementById('tanggal_berakhir').value;
@@ -78,12 +123,10 @@ async function handleFormSubmit(e) {
     try {
         let fileUrl = null;
 
-        // Jika user memilih file baru
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
             const fileName = `${Date.now()}_${file.name}`; 
 
-            // Sudah diganti menggunakan 'lampiran_spkrkk' (huruf kecil)
             const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('lampiran_spkrkk')
                 .upload(fileName, file);
@@ -103,6 +146,7 @@ async function handleFormSubmit(e) {
                 .from('berkas_spkrkk')
                 .insert([{ 
                     nik, 
+                    nama,
                     no_spk, 
                     tanggal_terbit, 
                     tanggal_berakhir, 
@@ -114,7 +158,7 @@ async function handleFormSubmit(e) {
 
         } else {
             // PROSES UPDATE
-            const updateData = { nik, no_spk, tanggal_terbit, tanggal_berakhir };
+            const updateData = { nik, nama, no_spk, tanggal_terbit, tanggal_berakhir };
             if (fileUrl) updateData.file_url = fileUrl;
 
             const { error: updateError } = await supabase
@@ -152,7 +196,8 @@ async function editData(id) {
         if (error) throw error;
 
         spkIdInput.value = data.id;
-        document.getElementById('nik').value = data.nik;
+        nikInput.value = data.nik;
+        namaInput.value = data.nama || '';
         document.getElementById('no_spk').value = data.no_spk;
         document.getElementById('tanggal_terbit').value = data.tanggal_terbit;
         document.getElementById('tanggal_berakhir').value = data.tanggal_berakhir;
@@ -186,7 +231,6 @@ async function deleteData(id, fileUrl) {
 
         if (fileUrl) {
             const fileName = fileUrl.split('/').pop();
-            // Sudah diganti menggunakan 'lampiran_spkrkk' (huruf kecil)
             await supabase.storage
                 .from('lampiran_spkrkk')
                 .remove([fileName]);
