@@ -1,5 +1,5 @@
 // app.js
-import { getPegawai, savePegawai, deletePegawai } from './pegawai.js';
+import { getPegawai, savePegawai, deletePegawai } from '../js/pegawai.js';
 
 const formPegawai = document.getElementById('formPegawai');
 const tableBody = document.getElementById('tableBody');
