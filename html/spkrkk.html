@@ -23,6 +23,7 @@
                             <tr>
                                 <th>No</th>
                                 <th>NIK</th>
+                                <th>Nama</th>
                                 <th>No. SPK</th>
                                 <th>Tanggal Terbit</th>
                                 <th>Tanggal Berakhir</th>
@@ -32,7 +33,7 @@
                         </thead>
                         <tbody id="tbodySpk">
                             <tr>
-                                <td colspan="7" class="text-center text-muted">Memuat data...</td>
+                                <td colspan="8" class="text-center text-muted">Memuat data...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -54,7 +55,11 @@
 
                         <div class="mb-3">
                             <label for="nik" class="form-label">NIK Pegawai</label>
-                            <input type="text" class="form-control" id="nik" name="nik" required>
+                            <input type="text" class="form-control" id="nik" name="nik" placeholder="Masukkan NIK lalu tekan tab/klik luar" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nama" class="form-label">Nama Pegawai</label>
+                            <input type="text" class="form-control bg-light" id="nama" name="nama" placeholder="Otomatis terisi dari data pegawai" readonly required>
                         </div>
                         <div class="mb-3">
                             <label for="no_spk" class="form-label">Nomor SPK</label>
@@ -71,7 +76,7 @@
                         <div class="mb-3">
                             <label for="file_url" class="form-label">Lampiran Berkas (PDF/Gambar)</label>
                             <input type="file" class="form-control" id="file_url" name="file_url">
-                            <small class="text-muted d-block mt-1">Disimpan ke storage: <code>Lampiran_spkrkk</code></small>
+                            <small class="text-muted d-block mt-1">Disimpan ke storage: <code>lampiran_spkrkk</code></small>
                             <div id="editFilePreview" class="mt-2 text-primary" style="display: none;"></div>
                         </div>
                     </div>
