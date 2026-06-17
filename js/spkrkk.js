@@ -14,16 +14,16 @@ const btnTambah = document.getElementById('btnTambah');
 const nikInput = document.getElementById('nik');
 const namaInput = document.getElementById('nama');
 const filterTahun = document.getElementById('filterTahun');
-const inputCari = document.getElementById('inputCari'); // Element baru pencarian
+const inputCari = document.getElementById('inputCari'); 
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', loadData);
 formSpk.addEventListener('submit', handleFormSubmit);
 btnTambah.addEventListener('click', resetForm);
 
-// Listener untuk pencarian kata kunci & filter tahun
+// Listener untuk memicu pencarian & filter tahun
 filterTahun.addEventListener('change', loadData);
-inputCari.addEventListener('input', loadData); // Mengetik langsung memfilter tabel
+inputCari.addEventListener('input', loadData); // Mengetik langsung menyaring data secara instan
 
 // Listener saat user selesai mengisi NIK
 nikInput.addEventListener('change', CariNamaPegawai);
@@ -65,18 +65,16 @@ async function CariNamaPegawai() {
 }
 
 /**
- * 1. READ - Ambil data dari Supabase (Dengan Fitur Filter Tahun & Pencarian Kata Kunci)
+ * 1. READ - Ambil data dari Supabase & Saring Instan di Sisi Client
  */
 async function loadData() {
     try {
-        tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Memuat data...</td></tr>`;
-
-        // Mempersiapkan query awal
+        // Ambil struktur query awal ke Supabase
         let query = supabase
             .from('berkas_spkrkk')
             .select('*');
 
-        // 1. Logika Filter Tahun
+        // Saring berdasarkan tahun di server (jika tahun dipilih)
         const tahunTerpilih = filterTahun.value;
         if (tahunTerpilih) {
             query = query
@@ -84,26 +82,32 @@ async function loadData() {
                 .lte('tanggal_terbit', `${tahunTerpilih}-12-31`);
         }
 
-        // 2. Logika Pencarian Kata Kunci (NIK atau Nama)
-        const kataKunci = inputCari.value.trim();
-        if (kataKunci) {
-            // .or() digunakan untuk mencari ke kolom nik ATAU nama yang kemiripannya mirip (%kataKunci%)
-            query = query.or(`nik.ilike.%${kataKunci}%,nama.ilike.%${kataKunci}%`);
-        }
-
-        // Jalankan eksekusi query dengan pengurutan terbaru
+        // Eksekusi data dari database
         const { data, error } = await query.order('created_at', { ascending: false });
 
         if (error) throw error;
 
+        // --- LOGIKA PENCARIAN DI SISI CLIENT (JAVASCRIPT) ---
+        const kataKunci = inputCari.value.toLowerCase().trim();
+        
+        // Proses memfilter array data secara aman tanpa peduli tipe data kolom di database
+        const dataTerfilter = data.filter(item => {
+            const nikStr = item.nik ? String(item.nik).toLowerCase() : '';
+            const namaStr = item.nama ? String(item.nama).toLowerCase() : '';
+            
+            // Return true jika nik atau nama mengandung kata kunci yang diketik
+            return nikStr.includes(kataKunci) || namaStr.includes(kataKunci);
+        });
+
+        // Render data ke dalam tabel HTML
         tbodySpk.innerHTML = '';
         
-        if (data.length === 0) {
-            tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Data tidak ditemukan / berkas belum tersedia.</td></tr>`;
+        if (dataTerfilter.length === 0) {
+            tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Data tidak ditemukan.</td></tr>`;
             return;
         }
 
-        data.forEach((item, index) => {
+        dataTerfilter.forEach((item, index) => {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${index + 1}</td>
