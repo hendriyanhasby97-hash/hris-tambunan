@@ -2,6 +2,39 @@ import { supabase } from '../app/koneksi.js';
 
 const chartInstances = {};
 
+// Blueprint daftar kolom yang akan diperiksa kelengkapannya beserta nama rapinya
+const kamusKolomPegawai = {
+    nama: 'Nama',
+    nip: 'NIP',
+    status: 'Status',
+    kelompok_pegawai: 'Kelompok Pegawai',
+    kelompok_jabatan: 'Kelompok Jabatan',
+    gol: 'Golongan',
+    tmt_pangkat: 'TMT Pangkat',
+    tmt_berikutnya: 'TMT Berikutnya',
+    jabatan: 'Jabatan',
+    jenis_kelamin: 'Jenis Kelamin',
+    agama: 'Agama',
+    rentang_bup: 'Rentang BUP',
+    tmt_pensiun: 'TMT Pensiun',
+    tmt_cpns: 'TMT CPNS',
+    masuk_rs: 'Masuk RS',
+    masa_kerja_rs: 'Masa Kerja RS',
+    tempat_lahir: 'Tempat Lahir',
+    tanggal_lahir: 'Tanggal Lahir',
+    status_keluarga: 'Status Keluarga',
+    alamat: 'Alamat',
+    jenjang: 'Jenjang',
+    fakultas: 'Fakultas',
+    jurusan: 'Jurusan',
+    ruangan: 'Ruangan',
+    no_bpjsn: 'No BPJS',
+    no_bpjsket_taspen: 'No Taspen',
+    npwp: 'NPWP',
+    email: 'Email',
+    no_telp: 'No Telp'
+};
+
 document.addEventListener('DOMContentLoaded', initDashboard);
 
 async function initDashboard() {
@@ -22,10 +55,10 @@ async function initDashboard() {
         processAndRenderCategory(pegawai, 'fakultas', 'tblFakultas', 'chartFakultasBar', 'chartFakultasPie');
         processAndRenderCategory(pegawai, 'jurusan', 'tblJurusan', 'chartJurusanBar', 'chartJurusanPie');
 
-        // Filter data yang belum update mandiri (is_updated != true)
+        // Filter data pegawai yang belum diperbarui (is_updated != true)
         const pegawaiBelumUpdate = pegawai.filter(p => p.is_updated !== true);
 
-        // C. REGISTER EVENT EXPORT (HANYA NIK, NAMA, KETERANGAN)
+        // C. REGISTER EVENT EXPORT DENGAN KETERANGAN OTOMATIS
         document.getElementById('btnExportExcel').addEventListener('click', () => exportToExcel(pegawaiBelumUpdate));
         document.getElementById('btnExportPdf').addEventListener('click', () => exportToPdf(pegawaiBelumUpdate));
 
@@ -98,68 +131,86 @@ function processAndRenderCategory(data, column, tableId, barId, pieId) {
 }
 
 /**
- * Logika C1: Export Excel Minimalis (Hanya NIK, Nama, Keterangan)
+ * Helper: Fungsi untuk mendeteksi field mana saja yang kosong pada 1 row data pegawai
+ */
+function hitungKomponenKosong(item) {
+    const listKosong = [];
+    
+    for (const [key, labelNama] of Object.entries(kamusKolomPegawai)) {
+        const valueData = item[key];
+        // Jika data bernilai null, undefined, string kosong, atau strip (-)
+        if (valueData === null || valueData === undefined || String(valueData).trim() === '' || String(valueData).trim() === '-') {
+            listKosong.push(labelNama);
+        }
+    }
+
+    if (listKosong.length === 0) {
+        return "Data Lengkap (Belum diverifikasi)";
+    } else {
+        return `Belum diisi: ${listKosong.join(', ')}`;
+    }
+}
+
+/**
+ * Logika C1: Export Excel dengan rincian kolom kosong
  */
 function exportToExcel(dataList) {
-    if (dataList.length === 0) return alert("Sempurna! Tidak ada data pegawai yang belum diperbarui.");
+    if (dataList.length === 0) return alert("Sempurna! Seluruh data pegawai sudah diperbarui.");
 
     const formattedData = dataList.map((item, index) => ({
         "NO": index + 1,
         "NIK": item.nik || '-',
         "NAMA PEGAWAI": item.nama || '-',
-        "KETERANGAN": "Belum Update Data Mandiri"
+        "KOMPONEN BELUM DIISI / DIPERBAHARUI": hitungKomponenKosong(item)
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(formattedData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Belum Update");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rincian Belum Update");
 
-    XLSX.writeFile(workbook, `Rekap_Belum_Update_${Date.now()}.xlsx`);
+    XLSX.writeFile(workbook, `Rekap_Detail_Belum_Update_${Date.now()}.xlsx`);
 }
 
 /**
- * Logika C2: Export PDF Minimalis (Portrait A4 - Rapi & Bersih)
+ * Logika C2: Export PDF dengan rincian kolom kosong (Auto Wrap Text jika panjang)
  */
 function exportToPdf(dataList) {
-    if (dataList.length === 0) return alert("Sempurna! Tidak ada data pegawai yang belum diperbarui.");
+    if (dataList.length === 0) return alert("Sempurna! Seluruh data pegawai sudah diperbarui.");
 
     const { jsPDF } = window.jspdf;
-    // Menggunakan orientasi Portrait ('p') standar ukuran A4 karena hanya 3 kolom
     const doc = new jsPDF('p', 'pt', 'a4'); 
 
-    // Judul Dokumen
-    doc.setFontSize(14);
+    doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
-    doc.text("LAPORAN REKAP DATA PEGAWAI BELUM UPDATE", 40, 45);
+    doc.text("LAPORAN REKAP KOMPONEN DATA PEGAWAI YANG BELUM DIISI", 40, 45);
     
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
-    doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')}`, 40, 60);
+    doc.text(`Dicetak pada: ${new Date().toLocaleDateString('id-ID')} | Total: ${dataList.length} Pegawai`, 40, 60);
 
-    const headers = [["NO", "NIK", "NAMA PEGAWAI", "KETERANGAN"]];
+    const headers = [["NO", "NIK", "NAMA PEGAWAI", "KOMPONEN BELUM DIISI / DIPERBAHARUI"]];
     
     const bodyRows = dataList.map((item, index) => [
         index + 1,
         item.nik || '-',
         item.nama || '-',
-        "Belum Melakukan Update Data Mandiri"
+        hitungKomponenKosong(item)
     ]);
 
-    // Gambar tabel pas di halaman portrait A4
     doc.autoTable({
         head: headers,
         body: bodyRows,
         startY: 75,
         theme: 'grid',
-        styles: { fontSize: 9, cellPadding: 6 },
-        headStyles: { fillColor: [220, 53, 69], textColor: [255, 255, 255], fontStyle: 'bold' }, // Tema Merah Peringatan
+        styles: { fontSize: 8.5, cellPadding: 5, overflow: 'linebreak' }, // Menghindari teks terpotong ke samping
+        headStyles: { fillColor: [220, 53, 69], textColor: [255, 255, 255], fontStyle: 'bold' },
         columnStyles: {
-            0: { cellWidth: 35, halign: 'center' }, // No
-            1: { cellWidth: 100 },                  // NIK
-            2: { cellWidth: 200 },                  // Nama
-            3: { cellWidth: 180 }                   // Keterangan
+            0: { cellWidth: 30, halign: 'center' }, // No
+            1: { cellWidth: 75 },                  // NIK
+            2: { cellWidth: 120 },                 // Nama
+            3: { cellWidth: 290 }                  // Keterangan dinamis komponen kosong
         }
     });
 
-    doc.save(`Rekap_Belum_Update_${Date.now()}.pdf`);
+    doc.save(`Rekap_Detail_Belum_Update_${Date.now()}.pdf`);
 }
