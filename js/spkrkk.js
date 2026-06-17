@@ -1,4 +1,4 @@
-// Import objek supabase langsung dari koneksi.js (Keluar folder js/ lalu masuk ke app/)
+// Import objek supabase langsung dari koneksi.js
 import { supabase } from '../app/koneksi.js';
 
 // Inisialisasi Element DOM
@@ -15,15 +15,29 @@ const nikInput = document.getElementById('nik');
 const namaInput = document.getElementById('nama');
 const filterTahun = document.getElementById('filterTahun');
 const inputCari = document.getElementById('inputCari'); 
+const limitData = document.getElementById('limitData');
+const infoPagination = document.getElementById('infoPagination');
+const paginationControls = document.getElementById('paginationControls');
+
+// State Pagination Global
+let currentPage = 1;
+let itemsPerPage = parseInt(limitData.value);
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', loadData);
 formSpk.addEventListener('submit', handleFormSubmit);
 btnTambah.addEventListener('click', resetForm);
 
-// Listener untuk memicu pencarian & filter tahun
-filterTahun.addEventListener('change', loadData);
-inputCari.addEventListener('input', loadData); // Mengetik langsung menyaring data secara instan
+// Perubahan filter & pencarian mereset halaman kembali ke 1
+filterTahun.addEventListener('change', () => { currentPage = 1; loadData(); });
+inputCari.addEventListener('input', () => { currentPage = 1; loadData(); });
+
+// Perubahan pilihan batas data per halaman
+limitData.addEventListener('change', () => {
+    itemsPerPage = parseInt(limitData.value);
+    currentPage = 1;
+    loadData();
+});
 
 // Listener saat user selesai mengisi NIK
 nikInput.addEventListener('change', CariNamaPegawai);
@@ -40,7 +54,6 @@ async function CariNamaPegawai() {
 
     try {
         namaInput.value = 'Mencari data...';
-
         const { data, error } = await supabase
             .from('pegawai')
             .select('nama')
@@ -65,16 +78,14 @@ async function CariNamaPegawai() {
 }
 
 /**
- * 1. READ - Ambil data dari Supabase & Saring Instan di Sisi Client
+ * 1. READ - Ambil data & Saring Instan dengan Pagination Rapi
  */
 async function loadData() {
     try {
-        // Ambil struktur query awal ke Supabase
-        let query = supabase
-            .from('berkas_spkrkk')
-            .select('*');
+        tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Memuat data...</td></tr>`;
 
-        // Saring berdasarkan tahun di server (jika tahun dipilih)
+        let query = supabase.from('berkas_spkrkk').select('*');
+
         const tahunTerpilih = filterTahun.value;
         if (tahunTerpilih) {
             query = query
@@ -82,35 +93,48 @@ async function loadData() {
                 .lte('tanggal_terbit', `${tahunTerpilih}-12-31`);
         }
 
-        // Eksekusi data dari database
         const { data, error } = await query.order('created_at', { ascending: false });
-
         if (error) throw error;
 
-        // --- LOGIKA PENCARIAN DI SISI CLIENT (JAVASCRIPT) ---
+        // Proses Saring Kata Kunci (Pencarian)
         const kataKunci = inputCari.value.toLowerCase().trim();
-        
-        // Proses memfilter array data secara aman tanpa peduli tipe data kolom di database
         const dataTerfilter = data.filter(item => {
             const nikStr = item.nik ? String(item.nik).toLowerCase() : '';
             const namaStr = item.nama ? String(item.nama).toLowerCase() : '';
-            
-            // Return true jika nik atau nama mengandung kata kunci yang diketik
             return nikStr.includes(kataKunci) || namaStr.includes(kataKunci);
         });
 
-        // Render data ke dalam tabel HTML
-        tbodySpk.innerHTML = '';
+        // --- LOGIKA UTAMA PAGINATION ---
+        const totalItems = dataTerfilter.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
         
-        if (dataTerfilter.length === 0) {
+        // Memotong array data khusus untuk halaman aktif saat ini
+        const dataHalamanIni = dataTerfilter.slice(startIndex, endIndex);
+
+        // Update teks info baris data
+        if (totalItems > 0) {
+            infoPagination.innerText = `Menampilkan ${startIndex + 1} sampai ${endIndex} dari ${totalItems} data`;
+        } else {
+            infoPagination.innerText = `Menampilkan 0 data`;
+        }
+
+        // Render Baris Tabel
+        tbodySpk.innerHTML = '';
+        if (dataHalamanIni.length === 0) {
             tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-muted">Data tidak ditemukan.</td></tr>`;
+            setupPaginationControls(totalPages);
             return;
         }
 
-        dataTerfilter.forEach((item, index) => {
+        dataHalamanIni.forEach((item, index) => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${index + 1}</td>
+                <td>${startIndex + index + 1}</td>
                 <td><b>${item.nik}</b></td>
                 <td>${item.nama || '-'}</td>
                 <td>${item.no_spk}</td>
@@ -127,10 +151,56 @@ async function loadData() {
             tbodySpk.appendChild(row);
         });
 
+        // Buat kontrol tombol pagination
+        setupPaginationControls(totalPages);
+
     } catch (error) {
         console.error(error);
         tbodySpk.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error: ${error.message}</td></tr>`;
     }
+}
+
+/**
+ * Helper Logika Navigasi Ringkas (Membatasi jumlah tombol angka agar jgn terlalu panjang)
+ */
+function setupPaginationControls(totalPages) {
+    paginationControls.innerHTML = '';
+
+    // 1. Tombol SEBELUMNYA
+    const prevLi = document.createElement('li');
+    prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+    prevLi.innerHTML = `<button class="page-link" onclick="changePage(${currentPage - 1})">Sebelumnya</button>`;
+    paginationControls.appendChild(prevLi);
+
+    // 2. Tombol Angka Dinamis (Dibatasi maksimal hanya memunculkan 3 tombol aktif terdekat)
+    const maxVisible = 3; 
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+
+    if (endPage - startPage + 1 < maxVisible) {
+        startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        const pageLi = document.createElement('li');
+        pageLi.className = `page-item ${currentPage === i ? 'active' : ''}`;
+        pageLi.innerHTML = `<button class="page-link" onclick="changePage(${i})">${i}</button>`;
+        paginationControls.appendChild(pageLi);
+    }
+
+    // 3. Tombol SELANJUTNYA
+    const nextLi = document.createElement('li');
+    nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+    nextLi.innerHTML = `<button class="page-link" onclick="changePage(${currentPage + 1})">Selanjutnya</button>`;
+    paginationControls.appendChild(nextLi);
+}
+
+/**
+ * Helper untuk berganti halaman data
+ */
+function changePage(pageNumber) {
+    currentPage = pageNumber;
+    loadData();
 }
 
 /**
@@ -168,23 +238,13 @@ async function handleFormSubmit(e) {
         }
 
         if (id === "") {
-            // PROSES INSERT
             const { error: insertError } = await supabase
                 .from('berkas_spkrkk')
-                .insert([{ 
-                    nik, 
-                    nama,
-                    no_spk, 
-                    tanggal_terbit, 
-                    tanggal_berakhir, 
-                    file_url: fileUrl 
-                }]);
+                .insert([{ nik, nama, no_spk, tanggal_terbit, tanggal_berakhir, file_url: fileUrl }]);
 
             if (insertError) throw insertError;
             alert('Data berkas berhasil ditambahkan!');
-
         } else {
-            // PROSES UPDATE
             const updateData = { nik, nama, no_spk, tanggal_terbit, tanggal_berakhir };
             if (fileUrl) updateData.file_url = fileUrl;
 
@@ -207,19 +267,13 @@ async function handleFormSubmit(e) {
 }
 
 /**
- * 3. EDIT POPULATE - Ambil data untuk dimasukkan ke modal
+ * 3. EDIT POPULATE
  */
 async function editData(id) {
     resetForm();
     modalSpkLabel.innerText = "Edit Berkas SPK RKK";
-    
     try {
-        const { data, error } = await supabase
-            .from('berkas_spkrkk')
-            .select('*')
-            .eq('id', id)
-            .single();
-
+        const { data, error } = await supabase.from('berkas_spkrkk').select('*').eq('id', id).single();
         if (error) throw error;
 
         spkIdInput.value = data.id;
@@ -233,9 +287,7 @@ async function editData(id) {
             editFilePreview.style.display = 'block';
             editFilePreview.innerHTML = `File saat ini: <a href="${data.file_url}" target="_blank">Lihat Berkas</a>`;
         }
-
         modalSpk.show();
-
     } catch (error) {
         console.error(error);
         alert(`Gagal memuat data: ${error.message}`);
@@ -243,29 +295,20 @@ async function editData(id) {
 }
 
 /**
- * 4. DELETE - Hapus baris tabel & berkas di storage
+ * 4. DELETE
  */
 async function deleteData(id, fileUrl) {
     if (!confirm('Apakah Anda yakin ingin menghapus berkas ini?')) return;
-
     try {
-        const { error: deleteError } = await supabase
-            .from('berkas_spkrkk')
-            .delete()
-            .eq('id', id);
-
+        const { error: deleteError } = await supabase.from('berkas_spkrkk').delete().eq('id', id);
         if (deleteError) throw deleteError;
 
         if (fileUrl) {
             const fileName = fileUrl.split('/').pop();
-            await supabase.storage
-                .from('lampiran_spkrkk')
-                .remove([fileName]);
+            await supabase.storage.from('lampiran_spkrkk').remove([fileName]);
         }
-
         alert('Data berhasil dihapus!');
         loadData();
-
     } catch (error) {
         console.error(error);
         alert(`Gagal menghapus data: ${error.message}`);
@@ -286,6 +329,7 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('id-ID', options);
 }
 
-// Daftarkan fungsi ke objek window secara global agar onclick="..." di HTML bisa membaca fungsi ini
+// Daftarkan fungsi ke objek window global agar bisa dipanggil element HTML onclick
 window.editData = editData;
 window.deleteData = deleteData;
+window.changePage = changePage;
