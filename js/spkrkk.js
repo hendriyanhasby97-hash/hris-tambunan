@@ -1,8 +1,5 @@
-// Memastikan objek supabase dari koneksi.js sudah siap
-// (Asumsi di koneksi.js nama variabelnya adalah 'supabase')
-if (!supabase) {
-    console.error("Koneksi Supabase tidak ditemukan. Pastikan koneksi.js dimuat dengan benar.");
-}
+// Import objek supabase langsung dari koneksi.js (Keluar folder js/ lalu masuk ke app/)
+import { supabase } from '../app/koneksi.js';
 
 // Inisialisasi Element DOM
 const tbodySpk = document.getElementById('tbodySpk');
@@ -20,13 +17,12 @@ formSpk.addEventListener('submit', handleFormSubmit);
 btnTambah.addEventListener('click', resetForm);
 
 /**
- * 1. READ - Mengambil data langsung dari tabel Supabase
+ * 1. READ - Ambil data dari Supabase
  */
 async function loadData() {
     try {
         tbodySpk.innerHTML = `<tr><td colspan="7" class="text-center text-muted">Memuat data...</td></tr>`;
 
-        // Ambil data dari tabel berkas_spkrkk diurutkan berdasarkan created_at terbaru
         const { data, error } = await supabase
             .from('berkas_spkrkk')
             .select('*')
@@ -67,7 +63,7 @@ async function loadData() {
 }
 
 /**
- * 2. CREATE & UPDATE - Simpan data dan Handle Upload File ke Supabase Storage
+ * 2. CREATE & UPDATE - Simpan data & Upload File ke Storage
  */
 async function handleFormSubmit(e) {
     e.preventDefault();
@@ -82,20 +78,17 @@ async function handleFormSubmit(e) {
     try {
         let fileUrl = null;
 
-        // Proses upload file jika user memilih file baru
+        // Jika user memilih file baru
         if (fileInput.files.length > 0) {
             const file = fileInput.files[0];
-            // Membuat nama file unik (contoh: 1718291029_namafile.pdf)
             const fileName = `${Date.now()}_${file.name}`; 
 
-            // Upload ke Storage Bucket 'Lampiran_spkrkk'
             const { data: uploadData, error: uploadError } = await supabase.storage
                 .from('Lampiran_spkrkk')
                 .upload(fileName, file);
 
             if (uploadError) throw uploadError;
 
-            // Dapatkan Public URL dari file yang di-upload
             const { data: urlData } = supabase.storage
                 .from('Lampiran_spkrkk')
                 .getPublicUrl(fileName);
@@ -104,7 +97,7 @@ async function handleFormSubmit(e) {
         }
 
         if (id === "") {
-            // --- PROSES INSERT (TAMBAH DATA) ---
+            // PROSES INSERT
             const { error: insertError } = await supabase
                 .from('berkas_spkrkk')
                 .insert([{ 
@@ -119,13 +112,9 @@ async function handleFormSubmit(e) {
             alert('Data berkas berhasil ditambahkan!');
 
         } else {
-            // --- PROSES UPDATE (EDIT DATA) ---
+            // PROSES UPDATE
             const updateData = { nik, no_spk, tanggal_terbit, tanggal_berakhir };
-            
-            // Jika user upload file baru, update kolom file_url nya
-            if (fileUrl) {
-                updateData.file_url = fileUrl;
-            }
+            if (fileUrl) updateData.file_url = fileUrl;
 
             const { error: updateError } = await supabase
                 .from('berkas_spkrkk')
@@ -146,7 +135,7 @@ async function handleFormSubmit(e) {
 }
 
 /**
- * 3. EDIT POPULATE - Mengambil 1 data untuk dimasukkan ke form modal
+ * 3. EDIT POPULATE - Ambil data untuk dimasukkan ke modal
  */
 async function editData(id) {
     resetForm();
@@ -161,7 +150,6 @@ async function editData(id) {
 
         if (error) throw error;
 
-        // Masukkan data ke dalam form modal
         spkIdInput.value = data.id;
         document.getElementById('nik').value = data.nik;
         document.getElementById('no_spk').value = data.no_spk;
@@ -170,7 +158,7 @@ async function editData(id) {
         
         if (data.file_url) {
             editFilePreview.style.display = 'block';
-            editFilePreview.innerHTML = `File saat ini: <a href="${data.file_url}" target="_blank">Lihat Berkas</a> <br><small class="text-muted">*Biarkan kosong jika tidak ingin mengganti berkas</small>`;
+            editFilePreview.innerHTML = `File saat ini: <a href="${data.file_url}" target="_blank">Lihat Berkas</a>`;
         }
 
         modalSpk.show();
@@ -182,13 +170,12 @@ async function editData(id) {
 }
 
 /**
- * 4. DELETE - Menghapus data di tabel & menghapus berkas di storage jika ada
+ * 4. DELETE - Hapus baris tabel & berkas di storage
  */
 async function deleteData(id, fileUrl) {
     if (!confirm('Apakah Anda yakin ingin menghapus berkas ini?')) return;
 
     try {
-        // Hapus data baris di tabel berkas_spkrkk
         const { error: deleteError } = await supabase
             .from('berkas_spkrkk')
             .delete()
@@ -196,9 +183,7 @@ async function deleteData(id, fileUrl) {
 
         if (deleteError) throw deleteError;
 
-        // Opsional: Hapus file dari Storage jika file_url tersedia
         if (fileUrl) {
-            // Ambil nama file asli dari URL supa-storage Anda
             const fileName = fileUrl.split('/').pop();
             await supabase.storage
                 .from('Lampiran_spkrkk')
@@ -214,9 +199,6 @@ async function deleteData(id, fileUrl) {
     }
 }
 
-/**
- * Helper: Reset Form
- */
 function resetForm() {
     formSpk.reset();
     spkIdInput.value = "";
@@ -225,11 +207,12 @@ function resetForm() {
     editFilePreview.innerHTML = '';
 }
 
-/**
- * Helper: Format Tanggal ke format Indonesia (DD/MM/YYYY)
- */
 function formatDate(dateString) {
     if (!dateString) return '-';
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
     return new Date(dateString).toLocaleDateString('id-ID', options);
 }
+
+// PENTING: Daftarkan fungsi ke objek window secara global agar onclick="..." di HTML bisa membaca fungsi ini
+window.editData = editData;
+window.deleteData = deleteData;
