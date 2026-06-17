@@ -114,35 +114,25 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody">
-                        <tr>
-                            <td>1</td>
-                            <td><strong>123456789</strong><br><span class="text-small">199001012020121001</span></td>
-                            <td><strong>Budi Santoso</strong><br><span class="text-small">Ruang Melati</span></td>
-                            <td><strong>Aktif</strong><br><span class="text-small">Fungsional</span></td>
-                            <td><strong>III/a</strong><br><span class="text-small">Perawat Pelaksana</span></td>
-                            <td><strong>Ilmu Keperawatan</strong><br><span class="text-small">D3 Keperawatan</span></td>
-                            <td><strong>01-Jan-2020</strong><br><span class="text-small">3 Tahun 5 Bulan</span></td>
-                            <td class="text-center">
-                                <div class="btn-group" role="group">
-                                    <button class="btn btn-sm btn-info text-white" title="View"><i class="fas fa-eye"></i></button>
-                                    <button class="btn btn-sm btn-warning text-white" title="Edit"><i class="fas fa-edit"></i></button>
-                                    <button class="btn btn-sm btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
-        <div class="card-footer d-flex justify-content-between align-items-center">
-            <small class="text-muted">Menampilkan 1 hingga 25 dari total data</small>
+        
+        <div class="card-footer d-flex flex-wrap justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2 mb-2 mb-md-0">
+                <label for="limitSelect" class="form-label mb-0 text-small">Tampilkan:</label>
+                <select id="limitSelect" class="form-select form-select-sm" style="width: 80px;">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <small class="text-muted ms-2" id="paginationInfo">Menampilkan data...</small>
+            </div>
             <nav>
                 <ul class="pagination pagination-sm mb-0" id="paginationControls">
-                    <li class="page-item disabled"><a class="page-link" href="#">Sebelumnya</a></li>
-                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">Selanjutnya</a></li>
-                </ul>
+                    </ul>
             </nav>
         </div>
     </div>
@@ -340,7 +330,6 @@
 </div>
 
 <script type="module" src="../app/app.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
