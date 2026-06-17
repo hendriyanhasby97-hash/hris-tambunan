@@ -1,5 +1,5 @@
 // pegawai.js
-import { supabase } from './koneksi.js';
+import { supabase } from '../app/koneksi.js';
 
 const TABLE_NAME = 'pegawai';
 
