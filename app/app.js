@@ -107,34 +107,56 @@ function renderTable(data, totalCount) {
 
 function renderPagination(totalCount) {
     const totalPages = Math.ceil(totalCount / itemsPerPage);
-    let html = '';
     
+    // Jika tidak ada data atau hanya 1 halaman, sembunyikan pagination
     if (totalCount === 0) {
         paginationInfo.textContent = "Tidak ada data";
-    } else {
-        const startData = (currentPage - 1) * itemsPerPage + 1;
-        const endData = Math.min(currentPage * itemsPerPage, totalCount);
-        
-        // PASTIKAN BARIS INI MENGGUNAKAN BACKTICK (`) BUKAN KUTIP SATU (')
-        paginationInfo.textContent = `Menampilkan ${startData} hingga ${endData} dari ${totalCount} data`;
+        paginationControls.innerHTML = '';
+        return;
     }
 
-    html += `<li class="page-item ${currentPage === 1 || totalCount === 0 ? 'disabled' : ''}">
+    const startData = (currentPage - 1) * itemsPerPage + 1;
+    const endData = Math.min(currentPage * itemsPerPage, totalCount);
+    paginationInfo.textContent = `Menampilkan ${startData} hingga ${endData} dari ${totalCount} data`;
+
+    let html = '';
+
+    // Tombol Sebelumnya
+    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
                 <a class="page-link" href="#" data-page="${currentPage - 1}">Sebelumnya</a>
              </li>`;
-    
-    for (let i = 1; i <= totalPages; i++) {
+
+    // Logika angka halaman (Membatasi tampilan)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, currentPage + 2);
+
+    // Menampilkan halaman pertama dan titik-titik jika perlu
+    if (startPage > 1) {
+        html += `<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>`;
+        if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+    }
+
+    // Loop angka halaman
+    for (let i = startPage; i <= endPage; i++) {
         html += `<li class="page-item ${currentPage === i ? 'active' : ''}">
                     <a class="page-link" href="#" data-page="${i}">${i}</a>
                  </li>`;
     }
 
-    html += `<li class="page-item ${currentPage === totalPages || totalPages === 0 ? 'disabled' : ''}">
+    // Menampilkan halaman terakhir dan titik-titik jika perlu
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        html += `<li class="page-item"><a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a></li>`;
+    }
+
+    // Tombol Selanjutnya
+    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
                 <a class="page-link" href="#" data-page="${currentPage + 1}">Selanjutnya</a>
              </li>`;
              
     paginationControls.innerHTML = html;
 
+    // Event listener untuk tombol pagination
     paginationControls.querySelectorAll('.page-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
