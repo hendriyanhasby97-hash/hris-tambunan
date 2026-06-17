@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Pegawai Keluar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <div class="container mt-5 mb-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 border-0">Data Pegawai Keluar</h5>
+                <button class="btn btn-light btn-sm" id="btnTambah" data-bs-toggle="modal" data-bs-target="#modalPegawaiKeluar">
+                    + Tambah Pegawai Keluar
+                </button>
+            </div>
+            <div class="card-body">
+                
+                <div class="row mb-3 g-2 align-items-center">
+                    <div class="col-md-3 col-sm-4">
+                        <div class="input-group input-group-sm">
+                            <label class="input-group-text" for="limitData">Tampilkan</label>
+                            <select class="form-select" id="limitData">
+                                <option value="10" selected>10</option>
+                                <option value="15">15</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                            </select>
+                            <span class="input-group-text">data</span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2 d-none d-md-block"></div>
+
+                    <div class="col-md-4 col-sm-5">
+                        <input type="text" class="form-control form-control-sm" id="inputCari" placeholder="Cari berdasarkan NIK atau Nama...">
+                    </div>
+                    <div class="col-md-3 col-sm-3">
+                        <div class="input-group input-group-sm">
+                            <label class="input-group-text" for="filterTahun">Tahun TMT</label>
+                            <select class="form-select" id="filterTahun">
+                                <option value="" selected>Semua</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2025">2025</option>
+                                <option value="2026">2026</option>
+                                <option value="2027">2027</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>No</th>
+                                <th>NIK</th>
+                                <th>Nama</th>
+                                <th>Bagian</th>
+                                <th>Unit Tugas</th>
+                                <th>TMT Keluar</th>
+                                <th>Jenis Keluar</th>
+                                <th>Keterangan</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyPegawaiKeluar">
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">Memuat data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-3 gap-2">
+                    <div id="infoPagination" class="text-muted small">
+                        Menampilkan 0 sampai 0 dari 0 data
+                    </div>
+                    <nav aria-label="Navigasi Halaman">
+                        <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                            </ul>
+                    </nav>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPegawaiKeluar" tabindex="-1" aria-labelledby="modalPegawaiKeluarLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="formPegawaiKeluar">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalPegawaiKeluarLabel">Tambah Pegawai Keluar</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="idKeluar" name="id_keluar">
+
+                        <div class="mb-3">
+                            <label for="nik" class="form-label">NIK Pegawai</label>
+                            <input type="text" class="form-control" id="nik" name="nik" placeholder="Masukkan NIK (Tab/Klik luar untuk cek master data)" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="nama" class="form-label">Nama Pegawai</label>
+                            <input type="text" class="form-control" id="nama" name="nama" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bagian" class="form-label">Bagian / Kategori Kepegawaian</label>
+                            <input type="text" class="form-control" id="bagian" name="bagian" placeholder="Contoh: Medis, Keperawatan, Non-Medis" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="unit_tugas" class="form-label">Unit Tugas / Ruangan Terakhir</label>
+                            <input type="text" class="form-control" id="unit_tugas" name="unit_tugas" placeholder="Contoh: IGD, Rawat Inap, ICU" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="tmt_keluar" class="form-label">TMT Keluar</label>
+                            <input type="date" class="form-control" id="tmt_keluar" name="tmt_keluar" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="jenis_keluar" class="form-label">Jenis Keluar</label>
+                            <select class="form-select" id="jenis_keluar" name="jenis_keluar" required>
+                                <option value="">-- Pilih Jenis Keluar --</option>
+                                <option value="Pensiun">Pensiun</option>
+                                <option value="Resign (Mengundurkan Diri)">Resign (Mengundurkan Diri)</option>
+                                <option value="Pindah Instansi/Mutasi">Pindah Instansi/Mutasi</option>
+                                <option value="Pemutusan Hubungan Kerja (PHK)">Pemutusan Hubungan Kerja (PHK)</option>
+                                <option value="Meninggal Dunia">Meninggal Dunia</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="keterangan" class="form-label">Keterangan Alasan / Detail</label>
+                            <textarea class="form-control" id="keterangan" name="keterangan" rows="2" placeholder="Masukkan alasan detail atau info tambahan..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger" id="btnSimpan">Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script type="module" src="../js/pegawai-keluar.js"></script>
+</body>
+</html>
