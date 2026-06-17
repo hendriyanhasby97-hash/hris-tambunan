@@ -5,74 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sertifikat Pegawai</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: transparent !important; padding: 20px 10px; }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5 mb-5">
-        <div class="card shadow-sm">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Kelola Sertifikat Pelatihan Pegawai</h5>
-                <button class="btn btn-light btn-sm" id="btnTambah" data-bs-toggle="modal" data-bs-target="#modalSertifikat">+ Tambah Sertifikat</button>
+<body>
+
+    <div class="container-fluid p-0">
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+            <div>
+                <h5 class="mb-0 fw-bold text-dark">Data Pengorbanan Kompetensi (Sertifikat Pelatihan)</h5>
+                <small class="text-muted">Pencatatan rincian riwayat JPL & nilai SKP Kemenkes</small>
             </div>
-            <div class="card-body">
-                <div class="row mb-3 g-2 align-items-center">
-                    <div class="col-md-3 col-sm-4">
-                        <div class="input-group input-group-sm">
-                            <label class="input-group-text" for="limitData">Tampilkan</label>
-                            <select class="form-select" id="limitData">
-                                <option value="10" selected>10</option>
-                                <option value="15">15</option>
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-2 d-none d-md-block"></div>
-                    <div class="col-md-4 col-sm-5">
-                        <input type="text" class="form-control form-control-sm" id="inputCari" placeholder="Cari NIK / Nama...">
-                    </div>
-                    <div class="col-md-3 col-sm-3">
-                        <div class="input-group input-group-sm">
-                            <label class="input-group-text" for="filterTahun">Tahun Pelaksanaan</label>
-                            <select class="form-select" id="filterTahun">
-                                <option value="" selected>Semua</option>
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026">2026</option>
-                                <option value="2027">2027</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>No</th>
-                                <th>NIK</th>
-                                <th>Nama</th>
-                                <th>No. Sertifikat</th>
-                                <th>Jenis</th>
-                                <th>Judul Kegiatan</th>
-                                <th>Tgl Pelaksanaan</th>
-                                <th>JPL</th>
-                                <th>SKP</th>
-                                <th>File</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbodySertifikat">
-                            <tr><td colspan="11" class="text-center text-muted">Memuat data...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-3 gap-2">
-                    <div id="infoPagination" class="text-muted small">Menampilkan 0 data</div>
-                    <nav><ul class="pagination pagination-sm mb-0" id="paginationControls"></ul></nav>
+            <button class="btn btn-success btn-sm shadow-sm" id="btnTambah" data-bs-toggle="modal" data-bs-target="#modalSertifikat">
+                + Tambah Sertifikat
+            </button>
+        </div>
+        
+        <!-- Toolbar Aksi IO, Filter & Cari -->
+        <div class="row mb-3 g-2 align-items-center">
+            <div class="col-md-2 col-sm-4">
+                <div class="input-group input-group-sm">
+                    <label class="input-group-text" for="limitData">Tampilkan</label>
+                    <select class="form-select" id="limitData">
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
                 </div>
             </div>
+            <div class="col-md-5 col-sm-8 d-flex gap-1 flex-wrap">
+                <button type="button" class="btn btn-outline-success btn-sm" id="btnExportExcel">💾 Excel</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnExportCsv"><code>,</code> CSV</button>
+                <button type="button" class="btn btn-outline-danger btn-sm" id="btnExportPdf">📄 PDF</button>
+                <button type="button" class="btn btn-dark btn-sm ms-auto" id="btnTriggerImport">📥 Import File</button>
+                <input type="file" id="inputImportFile" class="d-none" accept=".xlsx, .xls, .csv">
+            </div>
+            <div class="col-md-3 col-sm-7">
+                <input type="text" class="form-control form-control-sm" id="inputCari" placeholder="Cari NIK atau Nama...">
+            </div>
+            <div class="col-md-2 col-sm-5">
+                <select class="form-select form-select-sm" id="filterTahun">
+                    <option value="" selected>Semua Tahun</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-responsive border rounded bg-white shadow-sm">
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>No</th>
+                        <th>NIK</th>
+                        <th>Nama</th>
+                        <th>No. Sertifikat</th>
+                        <th>Jenis</th>
+                        <th>Judul Kegiatan</th>
+                        <th>Tgl Pelaksanaan</th>
+                        <th>JPL</th>
+                        <th>SKP</th>
+                        <th>File</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodySertifikat">
+                    <tr><td colspan="11" class="text-center text-muted">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-3 gap-2">
+            <div id="infoPagination" class="text-muted small">Menampilkan 0 data</div>
+            <nav><ul class="pagination pagination-sm mb-0" id="paginationControls"></ul></nav>
         </div>
     </div>
 
+    <!-- Modal Form -->
     <div class="modal fade" id="modalSertifikat" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -97,38 +110,26 @@
                         </div>
                         <div class="mb-2">
                             <label for="jenis_sertifikat" class="form-label">Jenis Sertifikat</label>
-                            <input type="text" class="form-control" id="jenis_sertifikat" placeholder="Contoh: Pelatihan, Workshop, Webinar" required>
+                            <input type="text" class="form-control" id="jenis_sertifikat" required>
                         </div>
                         <div class="mb-2">
                             <label for="judul_kegiatan" class="form-label">Judul Kegiatan</label>
                             <input type="text" class="form-control" id="judul_kegiatan" required>
                         </div>
                         <div class="mb-2">
-                            <label for="tanggal_pelaksanaan" class="form-label">Tanggal Utama Pelaksanaan</label>
+                            <label for="tanggal_pelaksanaan" class="form-label">Tanggal Pelaksanaan</label>
                             <input type="date" class="form-control" id="tanggal_pelaksanaan" required>
                         </div>
                         <div class="row">
-                            <div class="col-6 mb-2">
-                                <label for="mulai" class="form-label">Tgl Mulai</label>
-                                <input type="date" class="form-control" id="mulai" required>
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label for="selesai" class="form-label">Tgl Selesai</label>
-                                <input type="date" class="form-control" id="selesai" required>
-                            </div>
+                            <div class="col-6 mb-2"><label for="mulai" class="form-label">Mulai</label><input type="date" class="form-control" id="mulai" required></div>
+                            <div class="col-6 mb-2"><label for="selesai" class="form-label">Selesai</label><input type="date" class="form-control" id="selesai" required></div>
                         </div>
                         <div class="row">
-                            <div class="col-6 mb-2">
-                                <label for="jpl" class="form-label">Jumlah JPL</label>
-                                <input type="number" class="form-control" id="jpl" required>
-                            </div>
-                            <div class="col-6 mb-2">
-                                <label for="skp" class="form-label">Nilai SKP Kemenkes</label>
-                                <input type="number" step="0.1" class="form-control" id="skp" required>
-                            </div>
+                            <div class="col-6 mb-2"><label for="jpl" class="form-label">JPL</label><input type="number" class="form-control" id="jpl" required></div>
+                            <div class="col-6 mb-2"><label for="skp" class="form-label">SKP</label><input type="number" step="0.1" class="form-control" id="skp" required></div>
                         </div>
                         <div class="mb-2">
-                            <label for="file_sertifikat" class="form-label">File Sertifikat (PDF/Gambar)</label>
+                            <label for="file_sertifikat" class="form-label">File Sertifikat</label>
                             <input type="file" class="form-control" id="file_sertifikat">
                             <div id="editFilePreview" class="mt-2 text-success" style="display: none;"></div>
                         </div>
@@ -142,8 +143,12 @@
         </div>
     </div>
 
+    <!-- Script IO & Engine Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script type="module" src="../js/sertifikat.js"></script>
 </body>
 </html>
