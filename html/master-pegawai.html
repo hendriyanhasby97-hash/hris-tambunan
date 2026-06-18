@@ -185,7 +185,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Tanggal Lahir</label>
-                                    <input type="date" name="tanggal_lahir" class="form-control form-control-sm">
+                                    <input type="date" name="tanggal_lahir" id="formTanggalLahir" class="form-control form-control-sm">
                                 </div>
                                 <div class="col-md-3">
                                     <label class="form-label">Jenis Kelamin</label>
@@ -225,8 +225,14 @@
                         <div class="tab-pane fade" id="kepegawaian" role="tabpanel" aria-labelledby="kepegawaian-tab">
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">NIP</label>
-                                    <input type="text" name="nip" class="form-control form-control-sm">
+                                    <label class="form-label">Kelompok Pegawai</label>
+                                    <select name="kelompok_pegawai" id="formKelompokPegawai" class="form-select form-select-sm">
+                                        <option value="">-- Pilih Kelompok Pegawai --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">NIP (Hanya untuk ASN)</label>
+                                    <input type="text" name="nip" id="formNip" class="form-control form-control-sm" placeholder="Isi NIP 18 Digit" disabled>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Status Pegawai</label>
@@ -240,51 +246,57 @@
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Ruangan</label>
-                                    <input type="text" name="ruangan" class="form-control form-control-sm">
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Kelompok Pegawai</label>
-                                    <input type="text" name="kelompok_pegawai" class="form-control form-control-sm">
+                                    <select name="ruangan" id="formRuangan" class="form-select form-select-sm">
+                                        <option value="">-- Pilih Ruangan --</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Kelompok Jabatan</label>
-                                    <input type="text" name="kelompok_jabatan" class="form-control form-control-sm">
+                                    <select name="kelompok_jabatan" id="formKelompokJabatan" class="form-select form-select-sm">
+                                        <option value="">-- Pilih Kelompok Jabatan --</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Jabatan</label>
-                                    <input type="text" name="jabatan" class="form-control form-control-sm">
+                                    <select name="jabatan" id="formJabatan" class="form-select form-select-sm">
+                                        <option value="">-- Pilih Jabatan --</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Golongan</label>
-                                    <input type="text" name="gol" class="form-control form-control-sm">
+                                    <label class="form-label">Pangkat / Golongan</label>
+                                    <select name="gol" id="formGol" class="form-select form-select-sm">
+                                        <option value="">-- Pilih Golongan --</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">TMT Pangkat</label>
                                     <input type="date" name="tmt_pangkat" class="form-control form-control-sm">
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">TMT Berikutnya</label>
+                                    <label class="form-label">TMT Berikutnya (Hanya Admin)</label>
                                     <input type="date" name="tmt_berikutnya" class="form-control form-control-sm">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">TMT CPNS</label>
-                                    <input type="date" name="tmt_cpns" class="form-control form-control-sm">
+                                    <input type="date" name="tmt_cpns" id="formTmtCpns" class="form-control form-control-sm bg-light" readonly>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">TMT Masuk RS</label>
-                                    <input type="date" name="masuk_rs" class="form-control form-control-sm">
+                                    <input type="date" name="masuk_rs" id="formMasukRs" class="form-control form-control-sm">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Masa Kerja RS</label>
-                                    <input type="text" name="masa_kerja_rs" class="form-control form-control-sm" placeholder="Cth: 3 Tahun 2 Bulan">
+                                    <input type="text" name="masa_kerja_rs" id="formMasaKerjaRs" class="form-control form-control-sm bg-light" placeholder="Otomatis Terhitung" readonly>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label">Rentang BUP</label>
-                                    <input type="text" name="rentang_bup" class="form-control form-control-sm">
+                                    <label class="form-label">Rentang BUP (Pensiun)</label>
+                                    <select name="rentang_bup" id="formRentangBup" class="form-select form-select-sm">
+                                        <option value="">-- Pilih Rentang BUP --</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">TMT Pensiun</label>
-                                    <input type="date" name="tmt_pensiun" class="form-control form-control-sm">
+                                    <input type="date" name="tmt_pensiun" id="formTmtPensiun" class="form-control form-control-sm bg-light" readonly>
                                 </div>
                             </div>
                         </div>
@@ -293,15 +305,21 @@
                             <div class="row g-3">
                                 <div class="col-md-4">
                                     <label class="form-label">Jenjang Pendidikan</label>
-                                    <input type="text" name="jenjang" class="form-control form-control-sm" placeholder="Cth: S1, D3">
+                                    <select name="jenjang" id="formJenjang" class="form-select form-select-sm">
+                                        <option value="">-- Pilih Jenjang --</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Fakultas</label>
-                                    <input type="text" name="fakultas" class="form-control form-control-sm">
+                                    <select name="fakultas" id="formFakultas" class="form-select form-select-sm">
+                                        <option value="">-- Pilih Fakultas --</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Jurusan</label>
-                                    <input type="text" name="jurusan" class="form-control form-control-sm">
+                                    <select name="jurusan" id="formJurusan" class="form-select form-select-sm">
+                                        <option value="">-- Pilih Jurusan --</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -340,10 +358,9 @@
                 <h5 class="modal-title" id="modalDetailLabel">Detail Lengkap Pegawai</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="detailBody" style="max-height: 70vh; overflow-y: auto;">
-                </div>
+            <div class="modal-body" id="detailBody" style="max-height: 70vh; overflow-y: auto;"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
     </div>
