@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Data Master</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body { background-color: transparent !important; padding: 20px 10px; }
+        .nav-pills .nav-link { color: #495057; font-size: 13.5px; border: 1px solid #e3e6f0; margin-bottom: 5px; text-align: left; transition: all 0.2s; }
+        .nav-pills .nav-link:hover { background-color: #eaecf4; }
+        .nav-pills .nav-link.active { background-color: #0d6efd; color: white; border-color: #0d6efd; font-weight: 600; }
+        .workspace-card { background: white; border: 1px solid #e3e6f0; border-radius: 8px; padding: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid p-0">
+        <div class="row g-3">
+            
+            <div class="col-md-3">
+                <div class="bg-white p-3 border rounded shadow-sm">
+                    <h6 class="text-uppercase text-muted fw-bold small mb-3 tracking-wider"><i class="bi bi-sliders2 me-2"></i>Daftar Master</h6>
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <a class="nav-link active" id="tab-jabatan" data-type="jabatan" href="#jabatan"><i class="bi bi-briefcase me-2"></i> Master Jabatan</a>
+                        <a class="nav-link" id="tab-pangkat" data-type="pangkat" href="#pangkat"><i class="bi bi-box me-2"></i> Master Pangkat / Gol</a>
+                        <a class="nav-link" id="tab-ruangan" data-type="ruangan" href="#ruangan"><i class="bi bi-door-open me-2"></i> Master Ruangan</a>
+                        <a class="nav-link" id="tab-kel_pegawai" data-type="kel_pegawai" href="#kel_pegawai"><i class="bi bi-collection me-2"></i> Kelompok Pegawai</a>
+                        <a class="nav-link" id="tab-kel_jabatan" data-type="kel_jabatan" href="#kel_jabatan"><i class="bi bi-tags me-2"></i> Kelompok Jabatan</a>
+                        <a class="nav-link" id="tab-bup" data-type="bup" href="#bup"><i class="bi bi-hourglass-split me-2"></i> Rentang BUP</a>
+                        <a class="nav-link" id="tab-jenjang" data-type="jenjang" href="#jenjang"><i class="bi bi-mortarboard me-2"></i> Jenjang Pendidikan</a>
+                        <a class="nav-link" id="tab-fakultas" data-type="fakultas" href="#fakultas"><i class="bi bi-building me-2"></i> Master Fakultas</a>
+                        <a class="nav-link" id="tab-jurusan" data-type="jurusan" href="#jurusan"><i class="bi bi-journals me-2"></i> Master Jurusan</a>
+                        <a class="nav-link" id="tab-bidang" data-type="bidang" href="#bidang"><i class="bi bi-grid-1x2 me-2"></i> Master Bidang</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="workspace-card shadow-sm">
+                    
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                        <div>
+                            <h5 class="mb-0 fw-bold text-dark" id="txtJudulMaster">Pengaturan Master Jabatan</h5>
+                            <small class="text-muted" id="txtSubJudul">Kelola variasi data referensi operasional aplikasi</small>
+                        </div>
+                        <button class="btn btn-primary btn-sm fw-bold shadow-sm" id="btnTambah" data-bs-toggle="modal" data-bs-target="#modalMaster">
+                            + Tambah Data
+                        </button>
+                    </div>
+
+                    <div class="row mb-3 g-2 align-items-center">
+                        <div class="col-md-2 col-sm-4">
+                            <div class="input-group input-group-sm">
+                                <label class="input-group-text" for="limitData">Baris</label>
+                                <select class="form-select" id="limitData">
+                                    <option value="10" selected>10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-8 d-flex gap-1">
+                            <button type="button" class="btn btn-outline-success btn-sm" id="btnExportExcel">💾 Excel</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnExportCsv">CSV</button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="btnExportPdf">📄 PDF</button>
+                            <button type="button" class="btn btn-dark btn-sm ms-auto" id="btnTriggerImport">📥 Import</button>
+                            <input type="file" id="inputImportFile" class="d-none" accept=".xlsx, .xls, .csv">
+                        </div>
+                        <div class="col-md-4 col-sm-12">
+                            <input type="text" class="form-control form-control-sm" id="inputCari" placeholder="Cari data referensi...">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive border rounded bg-white">
+                        <table class="table table-striped table-hover align-middle mb-0" style="font-size: 13.5px;">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th width="70" class="text-center">No</th>
+                                    <th id="thNamaKolom">Nama Item Master</th>
+                                    <th width="140" class="text-center">Aksi</th>
+                                }
+                            </thead>
+                            <tbody id="tbodyMaster">
+                                <tr><td colspan="3" class="text-center text-muted py-3">Memuat data master...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mt-3 gap-2">
+                        <div id="infoPagination" class="text-muted small">Menampilkan 0 data</div>
+                        <nav><ul class="pagination pagination-sm mb-0" id="paginationControls"></ul></nav>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalMaster" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="formMaster">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalMasterLabel">Tambah Data</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="idMaster" name="id">
+                        <div class="mb-3">
+                            <label for="nama_item" class="form-label" id="lblFormInput">Nama Nilai Master</label>
+                            <input type="text" class="form-control" id="nama_item" required autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary btn-sm fw-bold" id="btnSimpan">Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script type="module" src="../js/pengaturan.js"></script>
+</body>
+</html>
