@@ -25,16 +25,25 @@ const limitSelect = document.getElementById('limitSelect');
 const paginationInfo = document.getElementById('paginationInfo');
 const paginationControls = document.getElementById('paginationControls');
 
+// Elemen Automasi Form
+const formKelompokPegawai = document.getElementById('formKelompokPegawai');
+const formNip = document.getElementById('formNip');
+const formTmtCpns = document.getElementById('formTmtCpns');
+const formMasukRs = document.getElementById('formMasukRs');
+const formMasaKerjaRs = document.getElementById('formMasaKerjaRs');
+const formTanggalLahir = document.getElementById('formTanggalLahir');
+const formRentangBup = document.getElementById('formRentangBup');
+const formTmtPensiun = document.getElementById('formTmtPensiun');
+
 // Jalankan saat halaman siap
 document.addEventListener('DOMContentLoaded', () => {
     initSistem();
 });
 
 /**
- * 0. INISIALISASI UTAMA & SUNTIK TOMBOL IO
+ * 0. INISIALISASI UTAMA & SUNTIK TOMBOL IO + POPULATE ALL MASTERS
  */
 async function initSistem() {
-    // Suntik tombol Ekspor & Impor secara programmatis di sebelah tombol "Tambah Pegawai" agar rapi
     const containerTombol = document.querySelector('#formFilter .text-md-end');
     if (containerTombol) {
         const divButtonGroop = document.createElement('div');
@@ -49,7 +58,7 @@ async function initSistem() {
         containerTombol.appendChild(divButtonGroop);
     }
 
-    // Pasang Event Listeners
+    // Pasang Event Listeners Filter & Limit
     searchKeyword.addEventListener('input', jalankanFilter);
     filterStatus.addEventListener('change', jalankanFilter);
     filterKelTenaga.addEventListener('change', jalankanFilter);
@@ -64,17 +73,173 @@ async function initSistem() {
     formPegawai.addEventListener('submit', handleFormSubmit);
     modalPegawaiElement.addEventListener('hidden.bs.modal', resetForm);
 
-    // Ambil Data dari Supabase
+    // BIND EVENT OTOMASI FORM PENILAIAN & KREDENSIAL
+    formKelompokPegawai.addEventListener('change', handleKelompokPegawaiChange);
+    formNip.addEventListener('input', handleNipInput);
+    formMasukRs.addEventListener('change', hitungMasaKerjaOtomatis);
+    formTanggalLahir.addEventListener('change', hitungTmtPensiunOtomatis);
+    formRentangBup.addEventListener('change', hitungTmtPensiunOtomatis);
+
+    // Ambil Data Master Dropdown Sekaligus
+    await muatSemuaDropdownMaster();
+    
+    // Ambil Data master pegawai dari Supabase
     await ambilMasterData();
     pasangMekanismeIO();
 }
 
 /**
- * 1. READ - Ambil Master Data & Hitung Counters
+ * UTALITAS: Ambil data dari tabel master & masukkan ke element select
+ */
+async function loadDropdownMaster(tableName, columnName, elementId) {
+    try {
+        const selectEl = document.getElementById(elementId);
+        if (!selectEl) return;
+        
+        const { data, error } = await supabase.from(tableName).select('*').order(columnName, { ascending: true });
+        if (error) throw error;
+
+        // Ambil opsi default pertama
+        const defaultOpt = selectEl.innerHTML;
+        selectEl.innerHTML = defaultOpt;
+
+        (data || []).forEach(row => {
+            const val = row[columnName];
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = val;
+            selectEl.appendChild(opt);
+        });
+    } catch (e) {
+        console.error(`Gagal memuat master dropdown ${tableName}:`, e.message);
+    }
+}
+
+async function muatSemuaDropdownMaster() {
+    await loadDropdownMaster('master_kelompok_pegawai', 'nama_kelompok', 'formKelompokPegawai');
+    await loadDropdownMaster('master_ruangan', 'nama_ruangan', 'formRuangan');
+    await loadDropdownMaster('master_kelompok_jabatan', 'nama_kelompok_jabatan', 'formKelompokJabatan');
+    await loadDropdownMaster('master_jabatan', 'nama_jabatan', 'formJabatan');
+    await loadDropdownMaster('master_pangkat', 'nama_pangkat', 'formGol');
+    await loadDropdownMaster('master_jenjang', 'nama_jenjang', 'formJenjang');
+    await loadDropdownMaster('master_fakultas', 'nama_fakultas', 'formFakultas');
+    await loadDropdownMaster('master_jurusan', 'nama_jurusan', 'formJurusan');
+    
+    // Khusus rentang BUP, sesuaikan dengan nama kolom dinamis (contoh: umur)
+    await loadDropdownMaster('rentang_bup', 'umur', 'formRentangBup');
+}
+
+/**
+ * LOGIKA UTAMA 14 RULES BISNIS
+ */
+
+// Rule 1: NIP bisa diisi jika kelompok pegawai ASN
+function handleKelompokPegawaiChange() {
+    const isAsn = String(formKelompokPegawai.value).toUpperCase() === 'ASN';
+    if (isAsn) {
+        formNip.disabled = false;
+        formNip.placeholder = "Isi NIP 18 Digit";
+    } else {
+        formNip.disabled = true;
+        formNip.value = "";
+        formNip.placeholder = "Terkunci (Hanya untuk ASN)";
+        formTmtCpns.value = "";
+    }
+}
+
+// Rule 8: TMT CPNS Otomatis diurai dari NIP (Digit ke-9 sampai 14 => YYYYMM)
+function handleNipInput() {
+    const nip = formNip.value.trim();
+    // Validasi panjang NIP PNS standar 18 digit
+    if (nip.length >= 14) {
+        const tahunStr = nip.substring(8, 12); // Indeks ke 8, 9, 10, 11 (4 digit)
+        const bulanStr = nip.substring(12, 14); // Indeks ke 12, 13 (2 digit)
+        
+        const tahun = parseInt(tahunStr);
+        const bulan = parseInt(bulanStr);
+
+        if (tahun > 1950 && bulan >= 1 && bulan <= 12) {
+            // TMT CPNS ditetapkan terhitung mulai tanggal 1 bulan pengangkatan
+            formTmtCpns.value = `${tahunStr}-${bulanStr}-01`;
+        } else {
+            formTmtCpns.value = "";
+        }
+    } else {
+        formTmtCpns.value = "";
+    }
+}
+
+// Rule 9: Hitung Masa Kerja Otomatis (## Tahun ## Bulan ## Hari)
+function hitungMasaKerjaOtomatis() {
+    const tmtMasukVal = formMasukRs.value;
+    if (!tmtMasukVal) {
+        formMasaKerjaRs.value = "";
+        return;
+    }
+
+    const tmtMasuk = new Date(tmtMasukVal);
+    const sekarang = new Date();
+
+    let tahun = sekarang.getFullYear() - tmtMasuk.getFullYear();
+    let bulan = sekarang.getMonth() - tmtMasuk.getMonth();
+    let hari = sekarang.getDate() - tmtMasuk.getDate();
+
+    if (hari < 0) {
+        bulan--;
+        // Dapatkan total hari pada bulan sebelumnya
+        const hariBulanLalu = new Date(sekarang.getFullYear(), sekarang.getMonth(), 0).getDate();
+        hari += hariBulanLalu;
+    }
+
+    if (bulan < 0) {
+        tahun--;
+        bulan += 12;
+    }
+
+    if (tahun < 0) {
+        formMasaKerjaRs.value = "0 Tahun 0 Bulan 0 Hari";
+    } else {
+        formMasaKerjaRs.value = `${tahun} Tahun ${bulan} Bulan ${hari} Hari`;
+    }
+}
+
+// Rule 11: TMT Pensiun otomatisasi dihitung dari tanggal lahir + bup = tanggal 1 bulan berikutnya
+function hitmtPensiunOtomatis() {}
+function hitungTmtPensiunOtomatis() {
+    const tglLahirVal = formTanggalLahir.value;
+    const bupVal = formRentangBup.value;
+
+    if (!tglLahirVal || !bupVal) {
+        formTmtPensiun.value = "";
+        return;
+    }
+
+    // Ambil angka usia dari string bup (misal "58 Tahun" atau "58" -> 58)
+    const matchAngka = bupVal.match(/\d+/);
+    if (!matchAngka) return;
+    const bupTahun = parseInt(matchAngka[0]);
+
+    const tglLahir = new Date(tglLahirVal);
+    
+    let tahunPensiun = tglLahir.getFullYear() + bupTahun;
+    let bulanPensiun = tglLahir.getMonth() + 1; // Pindah langsung ke 1 bulan berikutnya
+
+    if (bulanPensiun > 11) {
+        bulanPensiun = 0;
+        tahunPensiun++;
+    }
+
+    const mmStr = String(bulanPensiun + 1).padStart(2, '0');
+    // Tanggal 1 pada bulan berikutnya
+    formTmtPensiun.value = `${tahunPensiun}-${mmStr}-01`;
+}
+
+/**
+ * DATA LOADER CORE CRUD
  */
 async function ambilMasterData() {
     try {
-        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Memuat data master pegawai...</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin me-2"></i>Memuat data master...</td></tr>`;
         const { data, error } = await supabase.from('pegawai').select('*');
         if (error) throw error;
 
@@ -82,14 +247,10 @@ async function ambilMasterData() {
         hitungSummaryCounters(masterPegawai);
         jalankanFilter();
     } catch (err) {
-        console.error("Gagal memuat data pegawai:", err.message);
-        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Gagal memuat data: ${err.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error: ${err.message}</td></tr>`;
     }
 }
 
-/**
- * 2. HITUNG RINGKASAN METRIK (SUMMARY BOXES)
- */
 function hitungSummaryCounters(data) {
     document.getElementById('totPegawai').innerText = data.length;
     document.getElementById('totAktif').innerText = data.filter(p => String(p.status).toLowerCase() === 'aktif').length;
@@ -101,9 +262,6 @@ function hitungSummaryCounters(data) {
     document.getElementById('totLainnya').innerText = data.filter(p => !p.status || !statusTerdata.includes(String(p.status).toLowerCase())).length;
 }
 
-/**
- * 3. LOGIKA FILTER BERLAPIS
- */
 function jalankanFilter() {
     const keyword = searchKeyword.value.toLowerCase().trim();
     const statusVal = filterStatus.value.toLowerCase();
@@ -126,13 +284,9 @@ function jalankanFilter() {
     renderTabel();
 }
 
-/**
- * 4. RENDER TABEL & PAGINATION
- */
 function renderTabel() {
     const totalItems = dataTerfilter.length;
     const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-
     if (currentPage > totalPages) currentPage = totalPages;
 
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -145,7 +299,7 @@ function renderTabel() {
 
     tableBody.innerHTML = '';
     if (dataHalamanIni.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Tidak ada data pegawai yang cocok.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Data tidak ditemukan.</td></tr>`;
         renderPaginationControls(totalPages);
         return;
     }
@@ -162,21 +316,19 @@ function renderTabel() {
             <td><span class="text-small d-block">${formatDate(item.masuk_rs)}</span><span class="text-small text-success fw-bold">${item.masa_kerja_rs || '-'}</span></td>
             <td class="text-center">
                 <div class="btn-group btn-group-sm">
-                    <button class="btn btn-info text-white" onclick="lihatDetail('${item.nik}')" title="Detail"><i class="fas fa-eye"></i></button>
-                    <button class="btn btn-warning text-dark" onclick="editPegawai('${item.nik}')" title="Edit"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-danger" onclick="hapusPegawai('${item.nik}')" title="Hapus"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-info text-white" onclick="lihatDetail('${item.nik}')"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-warning text-dark" onclick="editPegawai('${item.nik}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger" onclick="hapusPegawai('${item.nik}')"><i class="fas fa-trash"></i></button>
                 </div>
             </td>
         `;
         tableBody.appendChild(tr);
     });
-
     renderPaginationControls(totalPages);
 }
 
 function renderPaginationControls(totalPages) {
     paginationControls.innerHTML = '';
-    
     const prevLi = document.createElement('li');
     prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
     prevLi.innerHTML = `<button class="page-link" onclick="gantiHalaman(${currentPage - 1})">«</button>`;
@@ -188,11 +340,6 @@ function renderPaginationControls(totalPages) {
             pageLi.className = `page-item ${currentPage === i ? 'active' : ''}`;
             pageLi.innerHTML = `<button class="page-link" onclick="gantiHalaman(${i})">${i}</button>`;
             paginationControls.appendChild(pageLi);
-        } else if (i === 2 || i === totalPages - 1) {
-            const separatorLi = document.createElement('li');
-            separatorLi.className = 'page-item disabled';
-            separatorLi.innerHTML = '<span class="page-link">...</span>';
-            paginationControls.appendChild(separatorLi);
         }
     }
 
@@ -204,9 +351,6 @@ function renderPaginationControls(totalPages) {
 
 function gantiHalaman(p) { currentPage = p; renderTabel(); }
 
-/**
- * 5. CREATE & UPDATE HANDLER
- */
 async function handleFormSubmit(e) {
     e.preventDefault();
     const formData = new FormData(formPegawai);
@@ -222,7 +366,7 @@ async function handleFormSubmit(e) {
         if (currentEditNik === null) {
             const { error } = await supabase.from('pegawai').insert([payload]);
             if (error) throw error;
-            alert('Data pegawai baru berhasil ditambahkan!');
+            alert('Data pegawai baru berhasil disimpan!');
         } else {
             const { error } = await supabase.from('pegawai').update(payload).eq('nik', currentEditNik);
             if (error) throw error;
@@ -230,14 +374,9 @@ async function handleFormSubmit(e) {
         }
         modalPegawai.hide();
         await ambilMasterData();
-    } catch (err) {
-        alert('Gagal menyimpan data: ' + err.message);
-    }
+    } catch (err) { alert('Gagal menyimpan data: ' + err.message); }
 }
 
-/**
- * 6. EDIT POPULATE & DELETE
- */
 async function editPegawai(nik) {
     resetForm();
     currentEditNik = nik;
@@ -254,24 +393,20 @@ async function editPegawai(nik) {
     });
 
     formPegawai.querySelector('input[name="nik"]').readOnly = true;
+    handleKelompokPegawaiChange(); // trigger visibilitas input NIP
     modalPegawai.show();
 }
 
 async function hapusPegawai(nik) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus data pegawai dengan NIK: ${nik}?`)) return;
+    if (!confirm(`Hapus permanen data NIK: ${nik}?`)) return;
     try {
         const { error } = await supabase.from('pegawai').delete().eq('nik', nik);
         if (error) throw error;
-        alert('Data pegawai berhasil deleted!');
+        alert('Data pegawai berhasil dihapus!');
         await ambilMasterData();
-    } catch (err) {
-        alert('Gagal menghapus data: ' + err.message);
-    }
+    } catch (err) { alert('Gagal menghapus: ' + err.message); }
 }
 
-/**
- * 7. MODAL VIEW DETAIL LENGKAP
- */
 function lihatDetail(nik) {
     const p = masterPegawai.find(peg => peg.nik === nik);
     if (!p) return;
@@ -287,138 +422,49 @@ function lihatDetail(nik) {
                     <tr><td><b>TTL</b></td><td>: ${p.tempat_lahir || '-'}, ${formatDate(p.tanggal_lahir)}</td></tr>
                     <tr><td><b>Gender</b></td><td>: ${p.jenis_kelamin || '-'}</td></tr>
                     <tr><td><b>Agama</b></td><td>: ${p.agama || '-'}</td></tr>
-                    <tr><td><b>Status Fam</b></td><td>: ${p.status_keluarga || '-'}</td></tr>
-                    <tr><td><b>Alamat</b></td><td>: ${p.alamat || '-'}</td></tr>
                 </table>
             </div>
             <div class="col-md-6">
-                <h6 class="text-success border-bottom pb-2"><i class="fas fa-briefcase me-2"></i>Kepegawaian & Ruangan</h6>
+                <h6 class="text-success border-bottom pb-2"><i class="fas fa-briefcase me-2"></i>Kepegawaian</h6>
                 <table class="table table-sm table-borderless small">
-                    <tr><td width="35%"><b>Status Kerja</b></td><td>: <span class="badge ${getStatusBadgeClass(p.status)}">${p.status || 'Aktif'}</span></td></tr>
+                    <tr><td width="35%"><b>Status Kerja</b></td><td>: ${p.status || 'Aktif'}</td></tr>
                     <tr><td><b>Ruangan</b></td><td>: ${p.ruangan || '-'}</td></tr>
                     <tr><td><b>Kel. Pegawai</b></td><td>: ${p.kelompok_pegawai || '-'}</td></tr>
-                    <tr><td><b>Kel. Jabatan</b></td><td>: ${p.kelompok_jabatan || '-'}</td></tr>
                     <tr><td><b>Jabatan</b></td><td>: ${p.jabatan || '-'}</td></tr>
-                    <tr><td><b>Golongan</b></td><td>: ${p.gol || '-'}</td></tr>
                     <tr><td><b>Masa Kerja RS</b></td><td>: ${p.masa_kerja_rs || '-'}</td></tr>
-                    <tr><td><b>TMT Masuk RS</b></td><td>: ${formatDate(p.masuk_rs)}</td></tr>
                 </table>
-            </div>
-            <div class="col-12 mt-2">
-                <h6 class="text-info border-bottom pb-2"><i class="fas fa-graduation-cap me-2"></i>Pendidikan & Kredensial Lainnya</h6>
-                <div class="row">
-                    <div class="col-md-6">
-                        <table class="table table-sm table-borderless small">
-                            <tr><td width="35%"><b>Jenjang</b></td><td>: ${p.jenjang || '-'}</td></tr>
-                            <tr><td><b>Fakultas</b></td><td>: ${p.fakultas || '-'}</td></tr>
-                            <tr><td><b>Jurusan</b></td><td>: ${p.jurusan || '-'}</td></tr>
-                        </table>
-                    </div>
-                    <div class="col-md-6">
-                        <table class="table table-sm table-borderless small">
-                            <tr><td width="40%"><b>No. BPJS Kes</b></td><td>: ${p.no_bpjsn || '-'}</td></tr>
-                            <tr><td><b>No. BPJS Ketenagakerjaan</b></td><td>: ${p.no_bpjsket_taspen || '-'}</td></tr>
-                            <tr><td><b>NPWP</b></td><td>: ${p.npwp || '-'}</td></tr>
-                        </table>
-                    </div>
-                </div>
             </div>
         </div>
     `;
     modalDetail.show();
 }
 
-/**
- * UTALITAS HELPERS
- */
 function resetForm() {
     formPegawai.reset();
     currentEditNik = null;
     modalPegawaiLabel.innerText = "Form Data Pegawai";
     formPegawai.querySelector('input[name="nik"]').readOnly = false;
-    const firstTab = document.querySelector('#pegawaiTabs button:first-child');
-    if (firstTab) bootstrap.Tab.getInstance(firstTab)?.show();
+    formNip.disabled = true;
 }
 
-function formatDate(d) {
-    return d ? new Date(d).toLocaleDateString('id-ID', {year:'numeric', month:'2-digit', day:'2-digit'}) : '-';
-}
-
+function formatDate(d) { return d ? new Date(d).toLocaleDateString('id-ID', {year:'numeric', month:'2-digit', day:'2-digit'}) : '-'; }
 function getStatusBadgeClass(status) {
-    switch (String(status).toLowerCase()) {
-        case 'aktif': return 'bg-success';
-        case 'pensiun': return 'bg-secondary';
-        case 'resign': return 'bg-warning text-dark';
-        case 'mutasi': return 'bg-info text-dark';
-        default: return 'bg-dark';
-    }
+    if(String(status).toLowerCase() === 'aktif') return 'bg-success';
+    if(String(status).toLowerCase() === 'pensiun') return 'bg-secondary';
+    return 'bg-dark';
 }
 
-/**
- * 8. UTALITAS SHARED UTILITY UTK DOWNLOAD EXCEL, CSV, PDF & IMPORT
- */
 function pasangMekanismeIO() {
     document.getElementById('btnExportExcel')?.addEventListener('click', () => {
-        if(dataTerfilter.length === 0) return alert("Data kosong!");
-        const ws = XLSX.utils.json_to_sheet(dataTerfilter);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Pegawai");
-        XLSX.writeFile(wb, `Data_Pegawai_${Date.now()}.xlsx`);
+        const ws = XLSX.utils.json_to_sheet(dataTerfilter); const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Pegawai"); XLSX.writeFile(wb, `Data_Pegawai.xlsx`);
     });
-
     document.getElementById('btnExportCsv')?.addEventListener('click', () => {
-        if(dataTerfilter.length === 0) return alert("Data kosong!");
-        const ws = XLSX.utils.json_to_sheet(dataTerfilter);
-        const csv = XLSX.utils.sheet_to_csv(ws);
+        const ws = XLSX.utils.json_to_sheet(dataTerfilter); const csv = XLSX.utils.sheet_to_csv(ws);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `Data_Pegawai_${Date.now()}.csv`;
-        link.click();
-    });
-
-    document.getElementById('btnExportPdf')?.addEventListener('click', () => {
-        if(dataTerfilter.length === 0) return alert("Data kosong!");
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF('l', 'pt', 'a3');
-        doc.text("REKAP DATA MASTER PEGAWAI SIM RS", 40, 40);
-        
-        const heads = [["No", "NIK", "NIP", "Nama Pegawai", "Status", "Ruangan", "Jabatan", "Gol", "Jenjang", "No Telp"]];
-        const body = dataTerfilter.map((item, idx) => [
-            idx + 1, item.nik, item.nip || '-', item.nama, item.status || 'Aktif',
-            item.ruangan || '-', item.jabatan || '-', item.gol || '-', item.jenjang || '-', item.no_telp || '-'
-        ]);
-        
-        doc.autoTable({ head: heads, body: body, startY: 55, theme: 'grid', styles: { fontSize: 8 } });
-        doc.save(`Data_Pegawai_${Date.now()}.pdf`);
-    });
-
-    const fileInput = document.getElementById('inputImportFile');
-    document.getElementById('btnTriggerImport')?.addEventListener('click', () => fileInput?.click());
-    
-    fileInput?.addEventListener('change', function() {
-        if (this.files.length === 0) return;
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                const workbook = XLSX.read(e.target.result, { type: 'binary' });
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                if (json.length === 0) return alert("File Excel/CSV kosong!");
-
-                const { error } = await supabase.from('pegawai').insert(json);
-                if (error) throw error;
-                
-                alert(`Sukses mengimpor ${json.length} records data pegawai baru!`);
-                await ambilMasterData();
-            } catch (err) { alert("Gagal impor data master: " + err.message); }
-        };
-        reader.readAsBinaryString(this.files[0]);
-        this.value = '';
+        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `Data_Pegawai.csv`; link.click();
     });
 }
 
 // Global register
-window.editPegawai = editPegawai;
-window.hapusPegawai = hapusPegawai;
-window.lihatDetail = lihatDetail;
-window.gantiHalaman = gantiHalaman;
+window.editPegawai = editPegawai; window.hapusPegawai = hapusPegawai; window.lihatDetail = lihatDetail; window.gantiHalaman = gantiHalaman;
