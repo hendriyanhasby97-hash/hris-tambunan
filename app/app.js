@@ -86,7 +86,26 @@ function suksesLogin(pegawai) {
     
     window.location.href = 'pegawai.html'; // Arahkan ke halaman utama
 }
+function applyRoleAccess() {
+    const role = localStorage.getItem('user_role');
+    
+    // Pilih elemen tombol
+    const btnTambah = document.getElementById('btnTambah');
+    const btnEdit = document.querySelectorAll('.btn-edit');
+    const btnDelete = document.querySelectorAll('.btn-delete');
 
+    // Sembunyikan semua akses jika user biasa
+    if (role === 'user') {
+        if (btnTambah) btnTambah.style.display = 'none';
+        btnEdit.forEach(el => el.style.display = 'none');
+        btnDelete.forEach(el => el.style.display = 'none');
+    } 
+    // Admin tidak boleh menghapus data
+    else if (role === 'admin') {
+        btnDelete.forEach(el => el.style.display = 'none');
+    }
+    // Superadmin bisa akses semua (tidak perlu melakukan apa-apa)
+}
     function tampilkanPesanGagal(pesan) {
         alertMessage.innerText = pesan;
         loginAlert.classList.remove('d-none');
