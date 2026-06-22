@@ -78,11 +78,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function suksesLogin(namaUser) {
-        localStorage.setItem('session_admin_name', namaUser);
-        localStorage.setItem('is_logged_in', 'true');
-        window.location.href = 'admin.html'; // Akan mengarah ke html/admin.html
-    }
+function suksesLogin(pegawai) {
+    // Simpan informasi penting ke localStorage
+    localStorage.setItem('user_name', pegawai.nama);
+    localStorage.setItem('user_role', pegawai.role); // simpan 'superadmin', 'admin', atau 'user'
+    localStorage.setItem('is_logged_in', 'true');
+    
+    window.location.href = 'pegawai.html'; // Arahkan ke halaman utama
+}
 
     function tampilkanPesanGagal(pesan) {
         alertMessage.innerText = pesan;
